@@ -2,7 +2,7 @@
   <div class="search-panel">
     <div class="search-header">
       <span class="prompt-sym">&#62;</span>
-      <span class="search-title">LOCATE CITY</span>
+      <span class="search-title">BUSCAR CIUDAD</span>
     </div>
 
     <div class="input-wrap">
@@ -15,7 +15,7 @@
         @keydown.escape="clearSuggestions"
         @keydown.down.prevent="moveFocus(1)"
         @keydown.up.prevent="moveFocus(-1)"
-        placeholder="Enter city name..."
+        placeholder="Escribe el nombre de la ciudad..."
         autocomplete="off"
         spellcheck="false"
       />
@@ -40,13 +40,13 @@
     </transition>
 
     <div class="no-results" v-if="noResults">
-      No results for "{{ query }}"
+      Sin resultados para "{{ query }}"
     </div>
 
     <div class="search-footer">
-      Powered by
+      Impulsado por
       <a href="https://nominatim.openstreetmap.org" target="_blank" rel="noopener">Nominatim</a>
-      &amp;
+      y
       <a href="https://www.openstreetmap.org" target="_blank" rel="noopener">OpenStreetMap</a>
     </div>
   </div>

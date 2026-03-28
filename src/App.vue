@@ -8,9 +8,8 @@
         <span class="lb">[</span>URBAN<span class="la">VEINS</span><span class="lb">]</span>
       </div>
       <div class="topbar-right" v-if="appState === 'loaded'">
-        <button class="tb-btn" @click="resetView" title="Reset view">&#8859; RESET</button>
-        <button class="tb-btn" @click="exportPNG">&#11015; PNG</button>
-        <button class="tb-btn accent" @click="startOver">&#8635; NEW CITY</button>
+        <button class="tb-btn" @click="resetView" title="Restablecer vista">&#8859; RESTABLECER</button>
+        <button class="tb-btn accent" @click="startOver">&#8635; NUEVA CIUDAD</button>
       </div>
     </header>
 
@@ -32,6 +31,13 @@
       </div>
     </Transition>
 
+    <!-- Nombre de ciudad en pantalla -->
+    <Transition name="fade">
+      <div class="city-overlay" v-if="appState === 'loaded'">
+        {{ cityShortName }}
+      </div>
+    </Transition>
+
     <!-- Control Panel (loaded) -->
     <Transition name="slide-right">
       <ControlPanel
@@ -41,6 +47,7 @@
         :settings="renderSettings"
         @change-settings="onSettingsChange"
         @export-png="exportPNG"
+        @export-svg="exportSVG"
       />
     </Transition>
 
@@ -57,6 +64,7 @@
       &nbsp;|&nbsp;
       <a href="https://opendatacommons.org/licenses/odbl/" target="_blank" rel="noopener">ODbL 1.0</a>
     </div>
+
   </div>
 </template>
 
@@ -101,25 +109,25 @@ async function onCitySelected(place) {
   appState.value = 'loading'
   loadingCityName.value = place.shortName
   loadProgress.value = 0
-  loadStatus.value = 'Connecting to OpenStreetMap...'
+  loadStatus.value = 'Conectando con OpenStreetMap...'
   errorMsg.value = null
 
   try {
     const areaId = placeToAreaId(place.osmType, place.osmId)
 
-    loadStatus.value = 'Fetching road network...'
+    loadStatus.value = 'Descargando red vial...'
     const osmData = await fetchRoads(areaId, p => {
       loadProgress.value = p
-      loadStatus.value = p < 50 ? 'Downloading road data...' : 'Processing segments...'
+      loadStatus.value = p < 50 ? 'Descargando datos de calles...' : 'Procesando segmentos...'
     })
 
-    loadStatus.value = 'Building network...'
+    loadStatus.value = 'Construyendo red...'
     loadProgress.value = 88
 
     const network = RoadNetwork.fromOSMResponse(osmData)
 
     if (network.ways.length === 0) {
-      throw new Error('No roads found. Try a larger city or different boundary.')
+      throw new Error('No se encontraron calles. Intenta con una ciudad más grande.')
     }
 
     stats.ways = network.ways.length
@@ -137,7 +145,7 @@ async function onCitySelected(place) {
 
   } catch (e) {
     appState.value = 'idle'
-    errorMsg.value = e.message || 'Failed to load data. Please try again.'
+    errorMsg.value = e.message || 'Error al cargar los datos. Por favor intenta de nuevo.'
     setTimeout(() => { errorMsg.value = null }, 6000)
   }
 }
@@ -155,6 +163,11 @@ function resetView() { renderer?.reset() }
 function exportPNG() {
   const filename = cityShortName.value.replace(/\s+/g, '-').toLowerCase() || 'urban-veins'
   renderer?.toPNG(filename)
+}
+
+function exportSVG() {
+  const filename = cityShortName.value.replace(/\s+/g, '-').toLowerCase() || 'urban-veins'
+  renderer?.toSVG(filename)
 }
 
 function startOver() {
@@ -259,6 +272,24 @@ function startOver() {
 }
 .attribution-bar a { color: rgba(0,212,255,0.5); }
 .attribution-bar a:hover { color: #00d4ff; }
+
+/* Nombre ciudad en pantalla */
+.city-overlay {
+  position: absolute;
+  bottom: 32px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: clamp(28px, 5vw, 56px);
+  font-weight: bold;
+  letter-spacing: 0.12em;
+  color: rgba(200, 224, 255, 0.08);
+  text-transform: uppercase;
+  pointer-events: none;
+  white-space: nowrap;
+  z-index: 4;
+  text-shadow: 0 0 40px rgba(0, 212, 255, 0.04);
+  user-select: none;
+}
 
 /* Transitions */
 .fade-enter-active, .fade-leave-active { transition: opacity 0.25s ease; }

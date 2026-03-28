@@ -24,11 +24,11 @@ export const COLOR_SCHEMES = {
       minor:    { solid: '#1a2d5a', glow: null,                    width: 0.5, glowWidth: 0  },
     },
     legend: [
-      { label: 'Motorway',  color: '#ff2d6b' },
-      { label: 'Primary',   color: '#00d4ff' },
-      { label: 'Secondary', color: '#00ff9f' },
-      { label: 'Tertiary',  color: '#7b61ff' },
-      { label: 'Minor',     color: '#1a2d5a' },
+      { label: 'Autopista',   color: '#ff2d6b' },
+      { label: 'Principal',   color: '#00d4ff' },
+      { label: 'Secundaria',  color: '#00ff9f' },
+      { label: 'Terciaria',   color: '#7b61ff' },
+      { label: 'Menor',       color: '#1a2d5a' },
     ],
   },
   mono: {
@@ -45,11 +45,11 @@ export const COLOR_SCHEMES = {
       minor:    { solid: '#222222', glow: null,                     width: 0.5, glowWidth: 0 },
     },
     legend: [
-      { label: 'Motorway',  color: '#ffffff' },
-      { label: 'Primary',   color: '#bbbbbb' },
-      { label: 'Secondary', color: '#888888' },
-      { label: 'Tertiary',  color: '#505050' },
-      { label: 'Minor',     color: '#222222' },
+      { label: 'Autopista',  color: '#ffffff' },
+      { label: 'Principal',  color: '#bbbbbb' },
+      { label: 'Secundaria', color: '#888888' },
+      { label: 'Terciaria', color: '#505050' },
+      { label: 'Menor',     color: '#222222' },
     ],
   },
   warm: {
@@ -66,11 +66,11 @@ export const COLOR_SCHEMES = {
       minor:    { solid: '#3a1a04', glow: null,                    width: 0.5, glowWidth: 0  },
     },
     legend: [
-      { label: 'Motorway',  color: '#ff6b35' },
-      { label: 'Primary',   color: '#ffd23f' },
-      { label: 'Secondary', color: '#f4a261' },
-      { label: 'Tertiary',  color: '#c77c30' },
-      { label: 'Minor',     color: '#3a1a04' },
+      { label: 'Autopista',  color: '#ff6b35' },
+      { label: 'Principal',  color: '#ffd23f' },
+      { label: 'Secundaria', color: '#f4a261' },
+      { label: 'Terciaria',  color: '#c77c30' },
+      { label: 'Menor',      color: '#3a1a04' },
     ],
   },
   cool: {
@@ -87,11 +87,11 @@ export const COLOR_SCHEMES = {
       minor:    { solid: '#05052a', glow: null,                    width: 0.5, glowWidth: 0  },
     },
     legend: [
-      { label: 'Motorway',  color: '#4361ee' },
-      { label: 'Primary',   color: '#00b4d8' },
-      { label: 'Secondary', color: '#0096c7' },
-      { label: 'Tertiary',  color: '#023e8a' },
-      { label: 'Minor',     color: '#05052a' },
+      { label: 'Autopista',  color: '#4361ee' },
+      { label: 'Principal',  color: '#00b4d8' },
+      { label: 'Secundaria', color: '#0096c7' },
+      { label: 'Terciaria',  color: '#023e8a' },
+      { label: 'Menor',      color: '#05052a' },
     ],
   },
 }
@@ -327,6 +327,67 @@ export class NeonRenderer {
     link.download = `${filename}.png`
     link.href = exportCanvas.toDataURL('image/png')
     link.click()
+  }
+
+  toSVG(filename = 'urban-veins') {
+    if (!this.network) return
+    const b = this.network.bounds
+    const w = this.canvas.width
+    const h = this.canvas.height
+
+    const latRange = b.maxLat - b.minLat
+    const lonRange = b.maxLon - b.minLon
+    const pad = 0.06
+    const scaleX = (w * (1 - pad * 2)) / lonRange
+    const scaleY = (h * (1 - pad * 2)) / latRange
+    const s = Math.min(scaleX, scaleY)
+    const ox = (w - lonRange * s) / 2
+    const oy = (h - latRange * s) / 2
+
+    const project = (lat, lon) => ({
+      x: ((lon - b.minLon) * s + ox).toFixed(2),
+      y: (h - ((lat - b.minLat) * s + oy)).toFixed(2),
+    })
+
+    const groups = { motorway: [], trunk: [], primary: [], secondary: [], tertiary: [], minor: [] }
+    for (const way of this.network.ways) groups[classifyRoad(way.tags)].push(way)
+
+    const order = ['minor', 'tertiary', 'secondary', 'trunk', 'primary', 'motorway']
+    let paths = ''
+
+    for (const type of order) {
+      const style = this.scheme.roads[type]
+      const ways = groups[type]
+      if (!ways.length) continue
+
+      let d = ''
+      for (const way of ways) {
+        const pts = way.points
+        const p0 = project(pts[0].lat, pts[0].lon)
+        d += `M${p0.x},${p0.y}`
+        for (let i = 1; i < pts.length; i++) {
+          const p = project(pts[i].lat, pts[i].lon)
+          d += `L${p.x},${p.y}`
+        }
+      }
+      paths += `<path d="${d}" stroke="${style.solid}" stroke-width="${style.width}" fill="none" stroke-linecap="round" stroke-linejoin="round"/>\n`
+    }
+
+    const svg = `<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">
+  <title>Urban Veins — ${filename}</title>
+  <desc>Datos de calles © OpenStreetMap contributors | ODbL 1.0</desc>
+  <rect width="${w}" height="${h}" fill="${this.scheme.background}"/>
+  ${paths}
+  <text x="${w - 8}" y="${h - 8}" font-family="monospace" font-size="11" fill="rgba(200,224,255,0.5)" text-anchor="end">© OpenStreetMap contributors | ODbL 1.0</text>
+</svg>`
+
+    const blob = new Blob([svg], { type: 'image/svg+xml' })
+    const link = document.createElement('a')
+    link.download = `${filename}.svg`
+    link.href = URL.createObjectURL(blob)
+    link.click()
+    URL.revokeObjectURL(link.href)
   }
 
   _bindEvents() {

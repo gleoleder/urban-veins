@@ -1,7 +1,7 @@
 <template>
   <div class="panel" :class="{ collapsed }">
     <!-- Toggle button -->
-    <button class="toggle-btn" @click="collapsed = !collapsed" :title="collapsed ? 'Open panel' : 'Close panel'">
+    <button class="toggle-btn" @click="collapsed = !collapsed" :title="collapsed ? 'Abrir panel' : 'Cerrar panel'">
       {{ collapsed ? '&#9656;' : '&#9666;' }}
     </button>
 
@@ -10,9 +10,9 @@
       <div class="panel-city">
         <span class="city-label">{{ cityName }}</span>
         <div class="city-stats">
-          <span>{{ fmtNum(stats.ways) }} roads</span>
+          <span>{{ fmtNum(stats.ways) }} calles</span>
           <span class="dot-sep">·</span>
-          <span>{{ fmtNum(stats.nodes) }} nodes</span>
+          <span>{{ fmtNum(stats.nodes) }} nodos</span>
         </div>
       </div>
 
@@ -20,7 +20,7 @@
 
       <!-- Color scheme -->
       <div class="section">
-        <div class="section-title">COLOR SCHEME</div>
+        <div class="section-title">ESQUEMA DE COLOR</div>
         <div class="schemes">
           <button
             v-for="s in schemes"
@@ -38,9 +38,9 @@
 
       <!-- Effects -->
       <div class="section">
-        <div class="section-title">EFFECTS</div>
+        <div class="section-title">EFECTOS</div>
         <label class="toggle-row">
-          <span class="toggle-label">Neon Glow</span>
+          <span class="toggle-label">Brillo Neón</span>
           <span
             class="toggle-switch"
             :class="{ on: settings.glowEnabled }"
@@ -53,7 +53,7 @@
 
       <!-- Legend -->
       <div class="section">
-        <div class="section-title">LEGEND</div>
+        <div class="section-title">LEYENDA</div>
         <div class="legend">
           <div v-for="item in activeLegend" :key="item.label" class="legend-row">
             <span class="legend-color" :style="{ background: item.color, boxShadow: `0 0 5px ${item.color}` }"></span>
@@ -64,16 +64,15 @@
 
       <!-- Export -->
       <div class="section">
-        <div class="section-title">EXPORT</div>
-        <button class="export-btn" @click="$emit('export-png')">&#11015; SAVE AS PNG</button>
+        <div class="section-title">EXPORTAR</div>
+        <button class="export-btn" @click="$emit('export-png')">&#11015; GUARDAR PNG</button>
+        <button class="export-btn" style="margin-top:6px" @click="$emit('export-svg')">&#11015; GUARDAR SVG</button>
       </div>
 
       <!-- Attribution -->
       <div class="attribution">
-        Map data ©
-        <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a><br />
-        License:
-        <a href="https://opendatacommons.org/licenses/odbl/1-0/" target="_blank" rel="noopener">ODbL 1.0</a>
+        Datos © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a><br />
+        Licencia: <a href="https://opendatacommons.org/licenses/odbl/1-0/" target="_blank" rel="noopener">ODbL 1.0</a>
       </div>
     </div>
   </div>
@@ -89,7 +88,7 @@ const props = defineProps({
   settings: { type: Object, required: true },
 })
 
-const emit = defineEmits(['change-settings', 'export-png'])
+const emit = defineEmits(['change-settings', 'export-png', 'export-svg'])
 
 const collapsed = ref(false)
 

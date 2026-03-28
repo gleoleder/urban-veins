@@ -15,8 +15,8 @@
     </div>
 
     <div class="loading-note">
-      Querying OpenStreetMap Overpass API<br />
-      Large cities may take up to 90 seconds
+      Consultando la API Overpass de OpenStreetMap<br />
+      Las ciudades grandes pueden tardar hasta 90 segundos
     </div>
   </div>
 </template>
