@@ -4,13 +4,15 @@
 
     <!-- Top bar -->
     <header class="topbar">
+      <div class="topbar-left-space" />
       <div class="logo">
-        <span class="lb">[</span>URBAN<span class="la">VEINS</span><span class="lb">]</span>
+        <span class="lb">[</span>map<span class="la">Leu</span><span class="lb">]</span>
       </div>
       <div class="topbar-right" v-if="appState === 'loaded'">
-        <button class="tb-btn" @click="resetView" title="Restablecer vista">&#8859; RESTABLECER</button>
+        <button class="tb-btn" @click="resetView">&#8859; RESTABLECER</button>
         <button class="tb-btn accent" @click="startOver">&#8635; NUEVA CIUDAD</button>
       </div>
+      <div v-else class="topbar-right" />
     </header>
 
     <!-- City Search -->
@@ -23,27 +25,24 @@
     <!-- Loading -->
     <Transition name="fade">
       <div class="center-panel" v-if="appState === 'loading'">
-        <LoadingScreen
-          :cityName="loadingCityName"
-          :progress="loadProgress"
-          :status="loadStatus"
-        />
+        <LoadingScreen :cityName="loadingCityName" :progress="loadProgress" :status="loadStatus" />
       </div>
     </Transition>
 
-    <!-- Nombre de ciudad en pantalla -->
+    <!-- Nombre ciudad + autor en pantalla -->
     <Transition name="fade">
-      <div
-        class="city-overlay"
-        v-if="appState === 'loaded'"
-        :style="{ color: customColors.cityName }"
-      >
-        {{ cityShortName }}
+      <div class="overlays" v-if="appState === 'loaded'">
+        <div class="city-overlay" :style="{ color: customColors.cityName }">
+          {{ cityShortName }}
+        </div>
+        <div class="author-overlay">
+          Elaborado por: John Leonardo Cabrera Espíndola.
+        </div>
       </div>
     </Transition>
 
-    <!-- Control Panel -->
-    <Transition name="slide-right">
+    <!-- Panel de control (izquierda) -->
+    <Transition name="slide-left">
       <ControlPanel
         v-if="appState === 'loaded'"
         :cityName="cityShortName"
@@ -64,7 +63,7 @@
       </div>
     </Transition>
 
-    <!-- Attribution -->
+    <!-- Atribución -->
     <div class="attribution-bar">
       &#169; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a>
       &nbsp;|&nbsp;
@@ -94,9 +93,9 @@ const errorMsg = ref(null)
 const stats = reactive({ ways: 0, nodes: 0 })
 const renderSettings = reactive({ colorScheme: 'neon', glowEnabled: true })
 const customColors = reactive({
-  cityName: 'rgba(200,224,255,0.08)',
+  cityName: 'rgba(200,224,255,0.10)',
   background: '',
-  lines: '',
+  roads: { motorway: '', trunk: '', primary: '', secondary: '', tertiary: '', minor: '' },
 })
 
 let renderer = null
@@ -111,9 +110,7 @@ onMounted(() => {
   window.addEventListener('resize', handleResize)
 })
 
-onUnmounted(() => {
-  window.removeEventListener('resize', handleResize)
-})
+onUnmounted(() => window.removeEventListener('resize', handleResize))
 
 async function onCitySelected(place) {
   appState.value = 'loading'
@@ -123,7 +120,6 @@ async function onCitySelected(place) {
   errorMsg.value = null
 
   try {
-    // areaId is null for nodes (they have no OSM area)
     const areaId = place.osmType === 'node' ? null : placeToAreaId(place.osmType, place.osmId)
 
     loadStatus.value = 'Descargando red vial...'
@@ -149,9 +145,13 @@ async function onCitySelected(place) {
 
     renderer.setColorScheme(renderSettings.colorScheme)
     renderer.setGlow(renderSettings.glowEnabled)
-    if (customColors.background) renderer.setBackground(customColors.background)
-    if (customColors.lines) renderer.setCustomLineColor(customColors.lines)
     renderer.setNetwork(network)
+
+    // Re-apply any custom colors
+    if (customColors.background) renderer.setBackground(customColors.background)
+    for (const [type, color] of Object.entries(customColors.roads)) {
+      if (color) renderer.setRoadColor(type, color)
+    }
 
     loadProgress.value = 100
     appState.value = 'loaded'
@@ -168,60 +168,61 @@ function onSettingsChange(newSettings) {
   if (renderer) {
     renderer.setColorScheme(newSettings.colorScheme)
     renderer.setGlow(newSettings.glowEnabled)
-    // Reset custom colors when switching scheme
+    // Reset custom road colors when switching scheme
+    for (const type of Object.keys(customColors.roads)) customColors.roads[type] = ''
     customColors.background = ''
-    customColors.lines = ''
   }
 }
 
-function onColorsChange(colors) {
-  Object.assign(customColors, colors)
-  if (renderer) {
-    if (colors.background !== undefined) renderer.setBackground(colors.background || null)
-    if (colors.lines !== undefined) renderer.setCustomLineColor(colors.lines || null)
+function onColorsChange(delta) {
+  if ('background' in delta) {
+    customColors.background = delta.background
+    renderer?.setBackground(delta.background || null)
+  }
+  if ('cityName' in delta) {
+    customColors.cityName = delta.cityName || 'rgba(200,224,255,0.10)'
+  }
+  if ('roads' in delta) {
+    for (const [type, color] of Object.entries(delta.roads)) {
+      customColors.roads[type] = color
+      renderer?.setRoadColor(type, color || null)
+    }
   }
 }
 
 function resetView() { renderer?.reset() }
 
 function exportPNG() {
-  const filename = cityShortName.value.replace(/\s+/g, '-').toLowerCase() || 'urban-veins'
-  renderer?.toPNG(filename)
+  const filename = cityShortName.value.replace(/\s+/g, '-').toLowerCase() || 'mapleu'
+  renderer?.toPNG(filename, cityShortName.value, customColors.cityName)
 }
 
 function exportSVG() {
-  const filename = cityShortName.value.replace(/\s+/g, '-').toLowerCase() || 'urban-veins'
-  renderer?.toSVG(filename)
+  const filename = cityShortName.value.replace(/\s+/g, '-').toLowerCase() || 'mapleu'
+  renderer?.toSVG(filename, cityShortName.value)
 }
 
 function startOver() {
   appState.value = 'idle'
   cityShortName.value = ''
   customColors.background = ''
-  customColors.lines = ''
-  customColors.cityName = 'rgba(200,224,255,0.08)'
+  customColors.cityName = 'rgba(200,224,255,0.10)'
+  for (const type of Object.keys(customColors.roads)) customColors.roads[type] = ''
   renderer?.clear()
 }
 </script>
 
 <style scoped>
-.app {
-  width: 100vw;
-  height: 100vh;
-  position: relative;
-  overflow: hidden;
-}
+.app { width: 100vw; height: 100vh; position: relative; overflow: hidden; }
 
 .canvas {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  cursor: grab;
-  display: block;
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  cursor: grab; display: block;
 }
 .canvas:active { cursor: grabbing; }
 
+/* Top bar */
 .topbar {
   position: absolute;
   top: 0; left: 0; right: 0;
@@ -230,92 +231,86 @@ function startOver() {
   align-items: center;
   justify-content: space-between;
   padding: 0 18px;
-  background: linear-gradient(180deg, rgba(5,5,16,0.96) 0%, rgba(5,5,16,0) 100%);
+  background: linear-gradient(180deg, rgba(5,5,16,0.96) 0%, transparent 100%);
   z-index: 20;
   pointer-events: none;
 }
-
+.topbar-left-space { width: 240px; flex-shrink: 0; }
 .topbar-right { pointer-events: all; display: flex; gap: 6px; }
 
 .logo {
-  font-size: 17px;
-  font-weight: bold;
-  letter-spacing: 0.18em;
-  color: #c8e0ff;
-  pointer-events: none;
+  font-size: 17px; font-weight: bold;
+  letter-spacing: 0.18em; color: #c8e0ff;
 }
 .la { color: #00d4ff; }
 .lb { color: rgba(0,212,255,0.35); font-weight: normal; }
 
-.tb-btn {
-  font-size: 10px;
-  padding: 5px 11px;
-  letter-spacing: 0.1em;
-}
+.tb-btn { font-size: 10px; padding: 5px 11px; letter-spacing: 0.1em; }
 .tb-btn.accent { border-color: rgba(0,255,159,0.3); color: #00ff9f; }
-.tb-btn.accent:hover { background: rgba(0,255,159,0.08); border-color: #00ff9f; box-shadow: 0 0 10px rgba(0,255,159,0.2); }
+.tb-btn.accent:hover { background: rgba(0,255,159,0.08); border-color: #00ff9f; }
 
+/* Center panel */
 .center-panel {
   position: absolute;
-  top: 50%;
-  left: 50%;
+  top: 50%; left: 50%;
   transform: translate(-50%, -50%);
   z-index: 25;
   width: min(460px, 92vw);
 }
 
-/* Nombre ciudad en pantalla */
-.city-overlay {
+/* City + author overlays */
+.overlays {
   position: absolute;
-  bottom: 32px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: clamp(28px, 5vw, 56px);
+  bottom: 28px;
+  left: 0; right: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  pointer-events: none;
+  z-index: 4;
+  user-select: none;
+}
+.city-overlay {
+  font-size: clamp(26px, 5vw, 54px);
   font-weight: bold;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  pointer-events: none;
   white-space: nowrap;
-  z-index: 4;
-  user-select: none;
   transition: color 0.3s;
 }
+.author-overlay {
+  font-size: clamp(9px, 1.2vw, 13px);
+  letter-spacing: 0.06em;
+  color: rgba(200,224,255,0.22);
+}
 
+/* Error */
 .error-toast {
-  position: absolute;
-  bottom: 36px;
-  left: 50%;
+  position: absolute; bottom: 36px; left: 50%;
   transform: translateX(-50%);
   background: rgba(255,0,110,0.12);
   border: 1px solid rgba(255,0,110,0.45);
   color: #ff006e;
-  padding: 10px 22px;
-  font-size: 12px;
-  letter-spacing: 0.04em;
-  cursor: pointer;
-  z-index: 30;
-  white-space: nowrap;
-  max-width: 90vw;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  padding: 10px 22px; font-size: 12px;
+  cursor: pointer; z-index: 30;
+  white-space: nowrap; max-width: 90vw;
+  overflow: hidden; text-overflow: ellipsis;
 }
 
+/* Attribution */
 .attribution-bar {
-  position: absolute;
-  bottom: 8px;
-  right: 10px;
-  font-size: 10px;
-  color: rgba(200,224,255,0.35);
-  z-index: 5;
-  pointer-events: all;
-  letter-spacing: 0.02em;
+  position: absolute; bottom: 8px; right: 12px;
+  font-size: 10px; color: rgba(200,224,255,0.35);
+  z-index: 5; letter-spacing: 0.02em;
 }
 .attribution-bar a { color: rgba(0,212,255,0.5); }
 .attribution-bar a:hover { color: #00d4ff; }
 
-.fade-enter-active, .fade-leave-active { transition: opacity 0.25s ease; }
+/* Transitions */
+.fade-enter-active, .fade-leave-active { transition: opacity 0.25s; }
 .fade-enter-from, .fade-leave-to { opacity: 0; }
 
-.slide-right-enter-active, .slide-right-leave-active { transition: transform 0.3s ease, opacity 0.3s ease; }
-.slide-right-enter-from, .slide-right-leave-to { transform: translateX(220px); opacity: 0; }
+.slide-left-enter-active, .slide-left-leave-active { transition: transform 0.3s ease, opacity 0.3s; }
+.slide-left-enter-from, .slide-left-leave-to { transform: translateX(-240px); opacity: 0; }
 </style>

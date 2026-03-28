@@ -9,31 +9,32 @@ function classifyRoad(tags) {
   return 'minor'
 }
 
+const ROAD_ORDER = ['minor', 'tertiary', 'secondary', 'trunk', 'primary', 'motorway']
+
 export const COLOR_SCHEMES = {
   neon: {
-    id: 'neon',
-    name: 'NEON',
+    id: 'neon', name: 'NEON',
     background: '#050510',
     preview: 'linear-gradient(90deg, #ff2d6b 0%, #00d4ff 50%, #00ff9f 100%)',
     roads: {
-      motorway: { solid: '#ff2d6b', glow: 'rgba(255,45,107,0.35)', width: 2.5, glowWidth: 10 },
-      trunk:    { solid: '#ff6b2d', glow: 'rgba(255,107,45,0.3)',  width: 2.0, glowWidth: 8  },
-      primary:  { solid: '#00d4ff', glow: 'rgba(0,212,255,0.3)',   width: 1.8, glowWidth: 8  },
-      secondary:{ solid: '#00ff9f', glow: 'rgba(0,255,159,0.22)',  width: 1.3, glowWidth: 5  },
-      tertiary: { solid: '#7b61ff', glow: 'rgba(123,97,255,0.18)', width: 0.9, glowWidth: 4  },
-      minor:    { solid: '#1a2d5a', glow: null,                    width: 0.5, glowWidth: 0  },
+      motorway: { solid: '#ff2d6b', glow: 'rgba(255,45,107,0.35)',  width: 2.5, glowWidth: 10 },
+      trunk:    { solid: '#ff6b2d', glow: 'rgba(255,107,45,0.3)',   width: 2.0, glowWidth: 8  },
+      primary:  { solid: '#00d4ff', glow: 'rgba(0,212,255,0.3)',    width: 1.8, glowWidth: 8  },
+      secondary:{ solid: '#00ff9f', glow: 'rgba(0,255,159,0.22)',   width: 1.3, glowWidth: 5  },
+      tertiary: { solid: '#7b61ff', glow: 'rgba(123,97,255,0.18)',  width: 0.9, glowWidth: 4  },
+      minor:    { solid: '#1a2d5a', glow: null,                     width: 0.5, glowWidth: 0  },
     },
     legend: [
-      { label: 'Autopista',   color: '#ff2d6b' },
-      { label: 'Principal',   color: '#00d4ff' },
-      { label: 'Secundaria',  color: '#00ff9f' },
-      { label: 'Terciaria',   color: '#7b61ff' },
-      { label: 'Menor',       color: '#1a2d5a' },
+      { label: 'Autopista',   color: '#ff2d6b', type: 'motorway' },
+      { label: 'Vía rápida',  color: '#ff6b2d', type: 'trunk'    },
+      { label: 'Principal',   color: '#00d4ff', type: 'primary'  },
+      { label: 'Secundaria',  color: '#00ff9f', type: 'secondary'},
+      { label: 'Terciaria',   color: '#7b61ff', type: 'tertiary' },
+      { label: 'Menor',       color: '#1a2d5a', type: 'minor'    },
     ],
   },
   mono: {
-    id: 'mono',
-    name: 'MONO',
+    id: 'mono', name: 'MONO',
     background: '#080808',
     preview: 'linear-gradient(90deg, #fff 0%, #aaa 50%, #444 100%)',
     roads: {
@@ -45,16 +46,16 @@ export const COLOR_SCHEMES = {
       minor:    { solid: '#222222', glow: null,                     width: 0.5, glowWidth: 0 },
     },
     legend: [
-      { label: 'Autopista',  color: '#ffffff' },
-      { label: 'Principal',  color: '#bbbbbb' },
-      { label: 'Secundaria', color: '#888888' },
-      { label: 'Terciaria', color: '#505050' },
-      { label: 'Menor',     color: '#222222' },
+      { label: 'Autopista',  color: '#ffffff', type: 'motorway' },
+      { label: 'Vía rápida', color: '#e0e0e0', type: 'trunk'    },
+      { label: 'Principal',  color: '#bbbbbb', type: 'primary'  },
+      { label: 'Secundaria', color: '#888888', type: 'secondary'},
+      { label: 'Terciaria',  color: '#505050', type: 'tertiary' },
+      { label: 'Menor',      color: '#222222', type: 'minor'    },
     ],
   },
   warm: {
-    id: 'warm',
-    name: 'WARM',
+    id: 'warm', name: 'WARM',
     background: '#0c0602',
     preview: 'linear-gradient(90deg, #ff6b35 0%, #ffd23f 50%, #ffcc02 100%)',
     roads: {
@@ -66,32 +67,33 @@ export const COLOR_SCHEMES = {
       minor:    { solid: '#3a1a04', glow: null,                    width: 0.5, glowWidth: 0  },
     },
     legend: [
-      { label: 'Autopista',  color: '#ff6b35' },
-      { label: 'Principal',  color: '#ffd23f' },
-      { label: 'Secundaria', color: '#f4a261' },
-      { label: 'Terciaria',  color: '#c77c30' },
-      { label: 'Menor',      color: '#3a1a04' },
+      { label: 'Autopista',  color: '#ff6b35', type: 'motorway' },
+      { label: 'Vía rápida', color: '#ff9500', type: 'trunk'    },
+      { label: 'Principal',  color: '#ffd23f', type: 'primary'  },
+      { label: 'Secundaria', color: '#f4a261', type: 'secondary'},
+      { label: 'Terciaria',  color: '#c77c30', type: 'tertiary' },
+      { label: 'Menor',      color: '#3a1a04', type: 'minor'    },
     ],
   },
   cool: {
-    id: 'cool',
-    name: 'COOL',
+    id: 'cool', name: 'COOL',
     background: '#03030f',
     preview: 'linear-gradient(90deg, #4361ee 0%, #7209b7 50%, #00b4d8 100%)',
     roads: {
       motorway: { solid: '#4361ee', glow: 'rgba(67,97,238,0.38)',  width: 2.5, glowWidth: 10 },
       trunk:    { solid: '#7209b7', glow: 'rgba(114,9,183,0.35)',  width: 2.0, glowWidth: 7  },
       primary:  { solid: '#00b4d8', glow: 'rgba(0,180,216,0.3)',   width: 1.8, glowWidth: 7  },
-      secondary:{ solid: '#0096c7', glow: 'rgba(0,150,199,0.22)', width: 1.3, glowWidth: 4  },
+      secondary:{ solid: '#0096c7', glow: 'rgba(0,150,199,0.22)',  width: 1.3, glowWidth: 4  },
       tertiary: { solid: '#023e8a', glow: null,                    width: 0.9, glowWidth: 0  },
       minor:    { solid: '#05052a', glow: null,                    width: 0.5, glowWidth: 0  },
     },
     legend: [
-      { label: 'Autopista',  color: '#4361ee' },
-      { label: 'Principal',  color: '#00b4d8' },
-      { label: 'Secundaria', color: '#0096c7' },
-      { label: 'Terciaria',  color: '#023e8a' },
-      { label: 'Menor',      color: '#05052a' },
+      { label: 'Autopista',  color: '#4361ee', type: 'motorway' },
+      { label: 'Vía rápida', color: '#7209b7', type: 'trunk'    },
+      { label: 'Principal',  color: '#00b4d8', type: 'primary'  },
+      { label: 'Secundaria', color: '#0096c7', type: 'secondary'},
+      { label: 'Terciaria',  color: '#023e8a', type: 'tertiary' },
+      { label: 'Menor',      color: '#05052a', type: 'minor'    },
     ],
   },
 }
@@ -106,25 +108,46 @@ export class NeonRenderer {
     this.network = null
     this.scheme = COLOR_SCHEMES.neon
     this.glowEnabled = true
-    this._customBackground = null
-    this._customLineColor = null
 
+    // DPI
+    this._dpr = window.devicePixelRatio || 1
+    this._lw = 0
+    this._lh = 0
+
+    // Custom colors
+    this._customBackground = null
+    this._customRoadColors = {}
+
+    // Cached Path2D per type (only rebuilt on setNetwork/resize)
+    this._paths = null
+
+    // Pan / zoom
     this.panX = 0
     this.panY = 0
     this.scale = 1
 
+    // Interaction
     this._drag = false
     this._lastPos = null
     this._pinchDist = null
 
     this._bindEvents()
-    this._drawEmpty()
   }
 
+  // ── Public API ──────────────────────────────────────────────────
+
   resize(w, h) {
-    this.canvas.width = w
-    this.canvas.height = h
+    const dpr = window.devicePixelRatio || 1
+    this._dpr = dpr
+    this._lw = w
+    this._lh = h
+    this.canvas.width = Math.round(w * dpr)
+    this.canvas.height = Math.round(h * dpr)
+    this.canvas.style.width = w + 'px'
+    this.canvas.style.height = h + 'px'
+
     if (this.network) {
+      this._buildPaths()   // rebuild for new size
       this._renderOffscreen()
     }
     this.draw()
@@ -133,25 +156,26 @@ export class NeonRenderer {
   setColorScheme(schemeId) {
     this.scheme = COLOR_SCHEMES[schemeId] || COLOR_SCHEMES.neon
     this._customBackground = null
-    this._customLineColor = null
-    if (this.network) this._renderOffscreen()
+    this._customRoadColors = {}
+    if (this.network && this._paths) this._renderOffscreen()
     this.draw()
   }
 
   setGlow(enabled) {
     this.glowEnabled = !!enabled
-    if (this.network) this._renderOffscreen()
+    if (this.network && this._paths) this._renderOffscreen()
     this.draw()
   }
 
   setBackground(color) {
     this._customBackground = color || null
-    this.draw()
+    this.draw() // no offscreen rebuild needed
   }
 
-  setCustomLineColor(color) {
-    this._customLineColor = color || null
-    if (this.network) this._renderOffscreen()
+  // Per-type color — fast (uses cached paths)
+  setRoadColor(type, color) {
+    this._customRoadColors[type] = color || null
+    if (this.network && this._paths) this._renderOffscreen()
     this.draw()
   }
 
@@ -160,71 +184,98 @@ export class NeonRenderer {
     this.panX = 0
     this.panY = 0
     this.scale = 1
+    this._buildPaths()      // expensive — only here
     this._renderOffscreen()
     this.draw()
   }
 
-  _renderOffscreen() {
+  clear() {
+    this.network = null
+    this._paths = null
+    this._customBackground = null
+    this._customRoadColors = {}
+    this.panX = 0; this.panY = 0; this.scale = 1
+    this._drawEmpty()
+  }
+
+  reset() {
+    this.panX = 0; this.panY = 0; this.scale = 1
+    this.draw()
+  }
+
+  // ── Path building (expensive) ────────────────────────────────────
+
+  _buildPaths() {
     if (!this.network) return
     const b = this.network.bounds
-    const w = this.canvas.width
-    const h = this.canvas.height
-
-    this.offscreen.width = w
-    this.offscreen.height = h
-
-    const ctx = this.offCtx
-    ctx.clearRect(0, 0, w, h)
-
-    const latRange = b.maxLat - b.minLat
-    const lonRange = b.maxLon - b.minLon
+    const w = this._lw
+    const h = this._lh
 
     const pad = 0.06
-    const scaleX = (w * (1 - pad * 2)) / lonRange
-    const scaleY = (h * (1 - pad * 2)) / latRange
-    const s = Math.min(scaleX, scaleY)
+    const s = Math.min(
+      (w * (1 - pad * 2)) / (b.maxLon - b.minLon),
+      (h * (1 - pad * 2)) / (b.maxLat - b.minLat)
+    )
+    const ox = (w - (b.maxLon - b.minLon) * s) / 2
+    const oy = (h - (b.maxLat - b.minLat) * s) / 2
 
-    const renderedW = lonRange * s
-    const renderedH = latRange * s
-    const ox = (w - renderedW) / 2
-    const oy = (h - renderedH) / 2
-
-    const project = (lat, lon) => ({
+    const px = (lat, lon) => ({
       x: (lon - b.minLon) * s + ox,
       y: h - ((lat - b.minLat) * s + oy),
     })
 
-    // Group ways by road type
+    // Group by type
     const groups = { motorway: [], trunk: [], primary: [], secondary: [], tertiary: [], minor: [] }
-    for (const way of this.network.ways) {
-      groups[classifyRoad(way.tags)].push(way)
-    }
+    for (const way of this.network.ways) groups[classifyRoad(way.tags)].push(way)
 
-    const order = ['minor', 'tertiary', 'secondary', 'trunk', 'primary', 'motorway']
-
-    for (const type of order) {
+    this._paths = {}
+    for (const type of ROAD_ORDER) {
       const ways = groups[type]
-      const style = this.scheme.roads[type]
-      if (!ways.length) continue
-
-      // Build path once
+      if (!ways.length) { this._paths[type] = null; continue }
       const path = new Path2D()
       for (const way of ways) {
         const pts = way.points
-        const p0 = project(pts[0].lat, pts[0].lon)
+        const p0 = px(pts[0].lat, pts[0].lon)
         path.moveTo(p0.x, p0.y)
         for (let i = 1; i < pts.length; i++) {
-          const p = project(pts[i].lat, pts[i].lon)
+          const p = px(pts[i].lat, pts[i].lon)
           path.lineTo(p.x, p.y)
         }
       }
+      this._paths[type] = path
+    }
+  }
+
+  // ── Offscreen render (fast — uses cached paths) ─────────────────
+
+  _renderOffscreen() {
+    if (!this.network || !this._paths) return
+    const dpr = this._dpr
+    const w = this._lw
+    const h = this._lh
+
+    this.offscreen.width = Math.round(w * dpr)
+    this.offscreen.height = Math.round(h * dpr)
+
+    const ctx = this.offCtx
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+    ctx.clearRect(0, 0, w, h)
+
+    for (const type of ROAD_ORDER) {
+      const path = this._paths[type]
+      const style = this.scheme.roads[type]
+      if (!path) continue
+
+      const solidColor = this._customRoadColors[type] || style.solid
 
       // Glow pass
-      if (this.glowEnabled && style.glow && style.glowWidth > 0) {
+      if (this.glowEnabled && style.glowWidth > 0) {
         ctx.save()
-        ctx.strokeStyle = style.glow
+        ctx.strokeStyle = this._customRoadColors[type]
+          ? solidColor + '55'
+          : (style.glow || 'transparent')
         ctx.lineWidth = style.glowWidth
-        ctx.shadowColor = style.solid
+        ctx.shadowColor = solidColor
         ctx.shadowBlur = style.glowWidth * 2.5
         ctx.globalCompositeOperation = 'screen'
         ctx.lineCap = 'round'
@@ -235,7 +286,7 @@ export class NeonRenderer {
 
       // Solid pass
       ctx.save()
-      ctx.strokeStyle = this._customLineColor || style.solid
+      ctx.strokeStyle = solidColor
       ctx.lineWidth = style.width
       ctx.shadowBlur = 0
       ctx.lineCap = 'round'
@@ -246,11 +297,18 @@ export class NeonRenderer {
     }
   }
 
+  // ── Main draw ───────────────────────────────────────────────────
+
   draw() {
     const ctx = this.ctx
-    const w = this.canvas.width
-    const h = this.canvas.height
+    const dpr = this._dpr
+    const w = this._lw || this.canvas.width
+    const h = this._lh || this.canvas.height
 
+    // Reset transform to DPR scale (logical coordinates)
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+
+    // Background
     ctx.fillStyle = this._customBackground || this.scheme.background
     ctx.fillRect(0, 0, w, h)
 
@@ -259,20 +317,23 @@ export class NeonRenderer {
       return
     }
 
+    // Draw offscreen with pan/zoom, scaling it to logical size
     ctx.save()
     ctx.translate(w / 2 + this.panX, h / 2 + this.panY)
     ctx.scale(this.scale, this.scale)
     ctx.translate(-w / 2, -h / 2)
-    ctx.drawImage(this.offscreen, 0, 0)
+    ctx.drawImage(this.offscreen, 0, 0, w, h)
     ctx.restore()
 
     this._drawScanlines(ctx, w, h)
   }
 
   _drawEmpty() {
+    const dpr = this._dpr || 1
+    const w = this._lw || this.canvas.width / dpr
+    const h = this._lh || this.canvas.height / dpr
     const ctx = this.ctx
-    const w = this.canvas.width || window.innerWidth
-    const h = this.canvas.height || window.innerHeight
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
     ctx.fillStyle = '#050510'
     ctx.fillRect(0, 0, w, h)
     this._drawGrid(ctx, w, h)
@@ -286,7 +347,6 @@ export class NeonRenderer {
     for (let x = 0; x <= w; x += size) { ctx.moveTo(x, 0); ctx.lineTo(x, h) }
     for (let y = 0; y <= h; y += size) { ctx.moveTo(0, y); ctx.lineTo(w, y) }
     ctx.stroke()
-
     ctx.fillStyle = 'rgba(0,212,255,0.07)'
     for (let x = 0; x <= w; x += size) {
       for (let y = 0; y <= h; y += size) {
@@ -299,44 +359,50 @@ export class NeonRenderer {
 
   _drawScanlines(ctx, w, h) {
     ctx.save()
-    ctx.globalAlpha = 0.018
-    ctx.fillStyle = '#000000'
+    ctx.globalAlpha = 0.016
+    ctx.fillStyle = '#000'
     for (let y = 0; y < h; y += 4) ctx.fillRect(0, y, w, 2)
     ctx.restore()
   }
 
-  clear() {
-    this.network = null
-    this.panX = 0
-    this.panY = 0
-    this.scale = 1
-    this._drawEmpty()
-  }
+  // ── Export ──────────────────────────────────────────────────────
 
-  reset() {
-    this.panX = 0
-    this.panY = 0
-    this.scale = 1
-    this.draw()
-  }
+  toPNG(filename = 'mapleu', cityName = '', cityNameColor = '') {
+    const dpr = this._dpr
+    const w = this._lw
+    const h = this._lh
+    const AUTHOR = 'Elaborado por: John Leonardo Cabrera Espíndola.'
 
-  toPNG(filename = 'urban-veins') {
     const exportCanvas = document.createElement('canvas')
-    exportCanvas.width = this.canvas.width
+    exportCanvas.width = this.canvas.width   // physical pixels
     exportCanvas.height = this.canvas.height
     const ectx = exportCanvas.getContext('2d')
 
+    // Copy current canvas (already DPI-quality)
     ectx.drawImage(this.canvas, 0, 0)
 
-    // Attribution overlay
-    ectx.font = '12px monospace'
-    ectx.fillStyle = 'rgba(200,224,255,0.55)'
+    // Scale to logical coordinates for text
+    ectx.scale(dpr, dpr)
+
+    // City name overlay (same as screen position)
+    if (cityName) {
+      const fontSize = Math.max(28, Math.min(w * 0.05, 56))
+      ectx.textAlign = 'center'
+      ectx.fillStyle = cityNameColor || 'rgba(200,224,255,0.55)'
+      ectx.font = `bold ${fontSize}px monospace`
+      ectx.fillText(cityName.toUpperCase(), w / 2, h - 58)
+
+      // Author below city name
+      ectx.font = `${Math.round(fontSize * 0.27)}px monospace`
+      ectx.fillStyle = 'rgba(200,224,255,0.38)'
+      ectx.fillText(AUTHOR, w / 2, h - 30)
+    }
+
+    // Attribution
+    ectx.font = '11px monospace'
+    ectx.fillStyle = 'rgba(200,224,255,0.4)'
     ectx.textAlign = 'right'
-    ectx.fillText(
-      '© OpenStreetMap contributors | ODbL 1.0 | urban-veins',
-      exportCanvas.width - 12,
-      exportCanvas.height - 10
-    )
+    ectx.fillText('© OpenStreetMap contributors | ODbL 1.0', w - 10, h - 10)
 
     const link = document.createElement('a')
     link.download = `${filename}.png`
@@ -344,22 +410,22 @@ export class NeonRenderer {
     link.click()
   }
 
-  toSVG(filename = 'urban-veins') {
+  toSVG(filename = 'mapleu', cityName = '') {
     if (!this.network) return
     const b = this.network.bounds
-    const w = this.canvas.width
-    const h = this.canvas.height
+    const w = this._lw
+    const h = this._lh
+    const AUTHOR = 'Elaborado por: John Leonardo Cabrera Espíndola.'
 
-    const latRange = b.maxLat - b.minLat
-    const lonRange = b.maxLon - b.minLon
     const pad = 0.06
-    const scaleX = (w * (1 - pad * 2)) / lonRange
-    const scaleY = (h * (1 - pad * 2)) / latRange
-    const s = Math.min(scaleX, scaleY)
-    const ox = (w - lonRange * s) / 2
-    const oy = (h - latRange * s) / 2
+    const s = Math.min(
+      (w * (1 - pad * 2)) / (b.maxLon - b.minLon),
+      (h * (1 - pad * 2)) / (b.maxLat - b.minLat)
+    )
+    const ox = (w - (b.maxLon - b.minLon) * s) / 2
+    const oy = (h - (b.maxLat - b.minLat) * s) / 2
 
-    const project = (lat, lon) => ({
+    const px = (lat, lon) => ({
       x: ((lon - b.minLon) * s + ox).toFixed(2),
       y: (h - ((lat - b.minLat) * s + oy)).toFixed(2),
     })
@@ -367,34 +433,38 @@ export class NeonRenderer {
     const groups = { motorway: [], trunk: [], primary: [], secondary: [], tertiary: [], minor: [] }
     for (const way of this.network.ways) groups[classifyRoad(way.tags)].push(way)
 
-    const order = ['minor', 'tertiary', 'secondary', 'trunk', 'primary', 'motorway']
     let paths = ''
-
-    for (const type of order) {
+    for (const type of ROAD_ORDER) {
       const style = this.scheme.roads[type]
       const ways = groups[type]
       if (!ways.length) continue
-
+      const color = this._customRoadColors[type] || style.solid
       let d = ''
       for (const way of ways) {
         const pts = way.points
-        const p0 = project(pts[0].lat, pts[0].lon)
+        const p0 = px(pts[0].lat, pts[0].lon)
         d += `M${p0.x},${p0.y}`
         for (let i = 1; i < pts.length; i++) {
-          const p = project(pts[i].lat, pts[i].lon)
+          const p = px(pts[i].lat, pts[i].lon)
           d += `L${p.x},${p.y}`
         }
       }
-      paths += `<path d="${d}" stroke="${style.solid}" stroke-width="${style.width}" fill="none" stroke-linecap="round" stroke-linejoin="round"/>\n`
+      paths += `<path d="${d}" stroke="${color}" stroke-width="${style.width}" fill="none" stroke-linecap="round" stroke-linejoin="round"/>\n`
     }
+
+    const bg = this._customBackground || this.scheme.background
+    const fontSize = Math.max(28, Math.min(w * 0.05, 56))
+    const cityBlock = cityName ? `
+  <text x="${w / 2}" y="${h - 58}" font-family="monospace" font-size="${fontSize}" font-weight="bold" fill="rgba(200,224,255,0.55)" text-anchor="middle">${cityName.toUpperCase()}</text>
+  <text x="${w / 2}" y="${h - 30}" font-family="monospace" font-size="${Math.round(fontSize * 0.27)}" fill="rgba(200,224,255,0.38)" text-anchor="middle">${AUTHOR}</text>` : ''
 
     const svg = `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">
-  <title>Urban Veins — ${filename}</title>
+  <title>mapLeu — ${cityName || filename}</title>
   <desc>Datos de calles © OpenStreetMap contributors | ODbL 1.0</desc>
-  <rect width="${w}" height="${h}" fill="${this.scheme.background}"/>
-  ${paths}
-  <text x="${w - 8}" y="${h - 8}" font-family="monospace" font-size="11" fill="rgba(200,224,255,0.5)" text-anchor="end">© OpenStreetMap contributors | ODbL 1.0</text>
+  <rect width="${w}" height="${h}" fill="${bg}"/>
+  ${paths}${cityBlock}
+  <text x="${w - 8}" y="${h - 8}" font-family="monospace" font-size="11" fill="rgba(200,224,255,0.4)" text-anchor="end">© OpenStreetMap contributors | ODbL 1.0</text>
 </svg>`
 
     const blob = new Blob([svg], { type: 'image/svg+xml' })
@@ -405,6 +475,8 @@ export class NeonRenderer {
     URL.revokeObjectURL(link.href)
   }
 
+  // ── Events ──────────────────────────────────────────────────────
+
   _bindEvents() {
     const c = this.canvas
 
@@ -413,67 +485,51 @@ export class NeonRenderer {
       this._lastPos = { x: e.clientX, y: e.clientY }
       c.style.cursor = 'grabbing'
     })
-
     window.addEventListener('mousemove', e => {
       if (!this._drag) return
-      const dx = e.clientX - this._lastPos.x
-      const dy = e.clientY - this._lastPos.y
+      this.panX += e.clientX - this._lastPos.x
+      this.panY += e.clientY - this._lastPos.y
       this._lastPos = { x: e.clientX, y: e.clientY }
-      this.panX += dx
-      this.panY += dy
       this.draw()
     })
-
     window.addEventListener('mouseup', () => {
-      if (this._drag) {
-        this._drag = false
-        c.style.cursor = 'grab'
-      }
+      if (this._drag) { this._drag = false; c.style.cursor = 'grab' }
     })
-
     c.addEventListener('wheel', e => {
       e.preventDefault()
-      const factor = e.deltaY < 0 ? 1.12 : 1 / 1.12
-      this.scale = Math.max(0.08, Math.min(100, this.scale * factor))
+      const f = e.deltaY < 0 ? 1.12 : 1 / 1.12
+      this.scale = Math.max(0.08, Math.min(100, this.scale * f))
       this.draw()
     }, { passive: false })
-
     c.addEventListener('touchstart', e => {
       e.preventDefault()
       if (e.touches.length === 1) {
         this._drag = true
         this._lastPos = { x: e.touches[0].clientX, y: e.touches[0].clientY }
       } else if (e.touches.length === 2) {
-        this._pinchDist = this._touchDist(e.touches)
+        this._pinchDist = this._td(e.touches)
       }
     }, { passive: false })
-
     c.addEventListener('touchmove', e => {
       e.preventDefault()
       if (e.touches.length === 1 && this._drag) {
-        const dx = e.touches[0].clientX - this._lastPos.x
-        const dy = e.touches[0].clientY - this._lastPos.y
+        this.panX += e.touches[0].clientX - this._lastPos.x
+        this.panY += e.touches[0].clientY - this._lastPos.y
         this._lastPos = { x: e.touches[0].clientX, y: e.touches[0].clientY }
-        this.panX += dx
-        this.panY += dy
         this.draw()
       } else if (e.touches.length === 2 && this._pinchDist) {
-        const d = this._touchDist(e.touches)
+        const d = this._td(e.touches)
         this.scale = Math.max(0.08, Math.min(100, this.scale * (d / this._pinchDist)))
         this._pinchDist = d
         this.draw()
       }
     }, { passive: false })
-
-    c.addEventListener('touchend', () => {
-      this._drag = false
-      this._pinchDist = null
-    })
+    c.addEventListener('touchend', () => { this._drag = false; this._pinchDist = null })
   }
 
-  _touchDist(touches) {
-    const dx = touches[0].clientX - touches[1].clientX
-    const dy = touches[0].clientY - touches[1].clientY
+  _td(t) {
+    const dx = t[0].clientX - t[1].clientX
+    const dy = t[0].clientY - t[1].clientY
     return Math.sqrt(dx * dx + dy * dy)
   }
 }
