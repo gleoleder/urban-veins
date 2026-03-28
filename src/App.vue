@@ -5,9 +5,10 @@
     <!-- Top bar -->
     <header class="topbar">
       <div class="topbar-left-space" />
-      <div class="logo">
+      <div class="logo" v-if="appState !== 'idle'">
         <span class="lb">[</span>map<span class="la">Leu</span><span class="lb">]</span>
       </div>
+      <div v-else></div>
       <div class="topbar-right" v-if="appState === 'loaded'">
         <button class="tb-btn" @click="resetView">&#8859; RESTABLECER</button>
         <button class="tb-btn accent" @click="startOver">&#8635; NUEVA CIUDAD</button>
@@ -33,12 +34,13 @@
       </div>
     </Transition>
 
-    <!-- Nombre ciudad + autor en pantalla -->
+    <!-- Nombre ciudad + dedicatoria + autor en pantalla -->
     <Transition name="fade">
       <div class="overlays" v-if="appState === 'loaded'">
         <div class="city-overlay" :style="{ color: customColors.cityName }">
           {{ cityShortName }}
         </div>
+        <div class="dedication-overlay" v-if="dedication">{{ dedication }}</div>
         <div class="author-overlay">
           Elaborado por: John Leonardo Cabrera Espíndola.
         </div>
@@ -53,8 +55,10 @@
         :stats="stats"
         :settings="renderSettings"
         :customColors="customColors"
+        :dedication="dedication"
         @change-settings="onSettingsChange"
         @change-colors="onColorsChange"
+        @change-dedication="dedication = $event"
         @export-png="exportPNG"
         @export-svg="exportSVG"
       />
@@ -94,6 +98,7 @@ const loadProgress = ref(0)
 const loadStatus = ref('')
 const errorMsg = ref(null)
 
+const dedication = ref('')
 const stats = reactive({ ways: 0, nodes: 0 })
 const renderSettings = reactive({ colorScheme: 'neon', glowEnabled: true })
 const customColors = reactive({
@@ -198,17 +203,18 @@ function resetView() { renderer?.reset() }
 
 function exportPNG() {
   const filename = cityShortName.value.replace(/\s+/g, '-').toLowerCase() || 'mapleu'
-  renderer?.toPNG(filename, cityShortName.value, customColors.cityName)
+  renderer?.toPNG(filename, cityShortName.value, customColors.cityName, dedication.value)
 }
 
 function exportSVG() {
   const filename = cityShortName.value.replace(/\s+/g, '-').toLowerCase() || 'mapleu'
-  renderer?.toSVG(filename, cityShortName.value, customColors.cityName)
+  renderer?.toSVG(filename, cityShortName.value, customColors.cityName, dedication.value)
 }
 
 function startOver() {
   appState.value = 'idle'
   cityShortName.value = ''
+  dedication.value = ''
   customColors.background = ''
   customColors.cityName = 'rgba(200,224,255,0.10)'
   for (const type of Object.keys(customColors.roads)) customColors.roads[type] = ''
@@ -310,10 +316,21 @@ function startOver() {
   white-space: nowrap;
   transition: color 0.3s;
 }
+.dedication-overlay {
+  font-size: clamp(10px, 1.4vw, 15px);
+  font-style: italic;
+  letter-spacing: 0.05em;
+  color: rgba(200,224,255,0.50);
+  max-width: 80vw;
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 .author-overlay {
-  font-size: clamp(8px, 1.2vw, 13px);
-  letter-spacing: 0.06em;
-  color: rgba(200,224,255,0.22);
+  font-size: clamp(6px, 0.7vw, 9px);
+  letter-spacing: 0.05em;
+  color: rgba(200,224,255,0.14);
 }
 
 /* Error */

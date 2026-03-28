@@ -83,6 +83,22 @@
         </div>
       </div>
 
+      <!-- Dedicatoria -->
+      <div class="section">
+        <div class="stitle">DEDICATORIA</div>
+        <div class="ded-hint">Aparece en el mapa y en las descargas</div>
+        <textarea
+          class="ded-input"
+          :value="dedication"
+          @input="$emit('change-dedication', $event.target.value)"
+          placeholder="Para ti, con todo mi cariño..."
+          maxlength="90"
+          rows="2"
+          spellcheck="false"
+        ></textarea>
+        <div class="ded-counter">{{ dedication.length }}/90</div>
+      </div>
+
       <!-- Exportar -->
       <div class="section">
         <div class="stitle">EXPORTAR</div>
@@ -109,8 +125,9 @@ const props = defineProps({
   stats:        { type: Object, default: () => ({ ways: 0, nodes: 0 }) },
   settings:     { type: Object, required: true },
   customColors: { type: Object, default: () => ({ cityName: '', background: '', roads: {} }) },
+  dedication:   { type: String, default: '' },
 })
-const emit = defineEmits(['change-settings', 'change-colors', 'export-png', 'export-svg'])
+const emit = defineEmits(['change-settings', 'change-colors', 'change-dedication', 'export-png', 'export-svg'])
 
 // Collapse by default on small screens
 const collapsed = ref(window.innerWidth < 640)
@@ -274,6 +291,29 @@ input[type="color"]::-webkit-color-swatch { border: none; border-radius: 2px; }
   transition: all 0.15s;
 }
 .xbtn:hover { background: rgba(229, 57, 53, 0.18); border-color: #d32f2f; color: #b71c1c; }
+
+/* Dedication */
+.ded-hint {
+  font-size: 9px; color: #8aabcc;
+  margin-bottom: 5px; letter-spacing: 0.04em;
+}
+.ded-input {
+  width: 100%; resize: none;
+  padding: 7px 9px; font-size: 11px;
+  font-style: italic; letter-spacing: 0.04em;
+  border: 1px solid rgba(100, 150, 220, 0.35);
+  background: #fff; color: #1a2d5a;
+  border-radius: 4px; outline: none;
+  transition: border-color 0.15s;
+  font-family: var(--font);
+  line-height: 1.5;
+}
+.ded-input::placeholder { color: #aabcd8; font-style: italic; }
+.ded-input:focus { border-color: #3a7bd5; }
+.ded-counter {
+  font-size: 9px; color: #aabcd8;
+  text-align: right; margin-top: 2px;
+}
 
 /* Export */
 .export-btn {

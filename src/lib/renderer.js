@@ -367,35 +367,51 @@ export class NeonRenderer {
 
   // ── Export ──────────────────────────────────────────────────────
 
-  toPNG(filename = 'mapleu', cityName = '', cityNameColor = '') {
+  toPNG(filename = 'mapleu', cityName = '', cityNameColor = '', dedication = '') {
     const dpr = this._dpr
     const w = this._lw
     const h = this._lh
     const AUTHOR = 'Elaborado por: John Leonardo Cabrera Espíndola.'
 
     const exportCanvas = document.createElement('canvas')
-    exportCanvas.width = this.canvas.width   // physical pixels
+    exportCanvas.width = this.canvas.width
     exportCanvas.height = this.canvas.height
     const ectx = exportCanvas.getContext('2d')
 
-    // Copy current canvas (already DPI-quality)
     ectx.drawImage(this.canvas, 0, 0)
-
-    // Scale to logical coordinates for text
     ectx.scale(dpr, dpr)
 
-    // City name overlay (same as screen position)
     if (cityName) {
       const fontSize = Math.max(28, Math.min(w * 0.05, 56))
-      ectx.textAlign = 'center'
-      ectx.fillStyle = cityNameColor || 'rgba(200,224,255,0.55)'
-      ectx.font = `bold ${fontSize}px monospace`
-      ectx.fillText(cityName.toUpperCase(), w / 2, h - 58)
+      const authorSize = Math.max(7, Math.round(fontSize * 0.13))
+      const dedSize = Math.max(11, Math.round(fontSize * 0.21))
+      const cleanDed = dedication ? dedication.replace(/[\r\n]+/g, ' ').trim() : ''
 
-      // Author below city name
-      ectx.font = `${Math.round(fontSize * 0.27)}px monospace`
-      ectx.fillStyle = 'rgba(200,224,255,0.38)'
-      ectx.fillText(AUTHOR, w / 2, h - 30)
+      ectx.textAlign = 'center'
+
+      // Author — very bottom, barely visible
+      const authorY = h - 14
+      ectx.font = `${authorSize}px monospace`
+      ectx.fillStyle = 'rgba(200,224,255,0.15)'
+      ectx.fillText(AUTHOR, w / 2, authorY)
+
+      // Dedication (if any)
+      if (cleanDed) {
+        const dedY = authorY - authorSize - 7
+        ectx.font = `italic ${dedSize}px monospace`
+        ectx.fillStyle = 'rgba(200,224,255,0.50)'
+        ectx.fillText(cleanDed, w / 2, dedY)
+
+        // City name above dedication
+        ectx.font = `bold ${fontSize}px monospace`
+        ectx.fillStyle = cityNameColor || 'rgba(200,224,255,0.55)'
+        ectx.fillText(cityName.toUpperCase(), w / 2, dedY - dedSize - 10)
+      } else {
+        // City name directly above author
+        ectx.font = `bold ${fontSize}px monospace`
+        ectx.fillStyle = cityNameColor || 'rgba(200,224,255,0.55)'
+        ectx.fillText(cityName.toUpperCase(), w / 2, authorY - authorSize - 18)
+      }
     }
 
     // Attribution
@@ -410,7 +426,7 @@ export class NeonRenderer {
     link.click()
   }
 
-  toSVG(filename = 'mapleu', cityName = '', cityNameColor = '') {
+  toSVG(filename = 'mapleu', cityName = '', cityNameColor = '', dedication = '') {
     if (!this.network) return
     const b = this.network.bounds
     const w = this._lw
@@ -465,9 +481,27 @@ export class NeonRenderer {
     const bg = this._customBackground || this.scheme.background
     const fontSize = Math.max(28, Math.min(w * 0.05, 56))
     const nameColor = cityNameColor || 'rgba(200,224,255,0.55)'
-    const cityBlock = cityName ? `
-  <text x="${w / 2}" y="${h - 58}" font-family="monospace" font-size="${fontSize}" font-weight="bold" fill="${nameColor}" text-anchor="middle">${cityName.toUpperCase()}</text>
-  <text x="${w / 2}" y="${h - 30}" font-family="monospace" font-size="${Math.round(fontSize * 0.27)}" fill="rgba(200,224,255,0.38)" text-anchor="middle">${AUTHOR}</text>` : ''
+    const authorSize = Math.max(7, Math.round(fontSize * 0.13))
+    const dedSize = Math.max(11, Math.round(fontSize * 0.21))
+    const cleanDed = dedication ? dedication.replace(/[\r\n]+/g, ' ').trim() : ''
+
+    const authorY = h - 14
+    let cityBlock = ''
+    if (cityName) {
+      if (cleanDed) {
+        const dedY = authorY - authorSize - 7
+        const cityY = dedY - dedSize - 10
+        cityBlock = `
+  <text x="${w/2}" y="${cityY}" font-family="monospace" font-size="${fontSize}" font-weight="bold" fill="${nameColor}" text-anchor="middle">${cityName.toUpperCase()}</text>
+  <text x="${w/2}" y="${dedY}" font-family="monospace" font-size="${dedSize}" font-style="italic" fill="rgba(200,224,255,0.50)" text-anchor="middle">${cleanDed}</text>
+  <text x="${w/2}" y="${authorY}" font-family="monospace" font-size="${authorSize}" fill="rgba(200,224,255,0.15)" text-anchor="middle">${AUTHOR}</text>`
+      } else {
+        const cityY = authorY - authorSize - 18
+        cityBlock = `
+  <text x="${w/2}" y="${cityY}" font-family="monospace" font-size="${fontSize}" font-weight="bold" fill="${nameColor}" text-anchor="middle">${cityName.toUpperCase()}</text>
+  <text x="${w/2}" y="${authorY}" font-family="monospace" font-size="${authorSize}" fill="rgba(200,224,255,0.15)" text-anchor="middle">${AUTHOR}</text>`
+      }
+    }
 
     const svg = `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">
