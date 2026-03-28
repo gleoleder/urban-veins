@@ -40,8 +40,8 @@
         <div class="city-overlay" :style="{ color: customColors.cityName }">
           {{ cityShortName }}
         </div>
-        <div class="dedication-overlay" v-if="dedication">{{ dedication }}</div>
-        <div class="author-overlay">
+        <div class="dedication-overlay" v-if="dedication" :style="{ color: customColors.dedicationColor || 'rgba(200,224,255,0.50)' }">{{ dedication }}</div>
+        <div class="author-overlay" :style="{ color: customColors.authorColor || 'rgba(200,224,255,0.14)' }">
           Elaborado por: John Leonardo Cabrera Espíndola.
         </div>
       </div>
@@ -339,17 +339,17 @@ function startOver() {
   font-size: clamp(10px, 1.4vw, 15px);
   font-style: italic;
   letter-spacing: 0.05em;
-  color: rgba(200,224,255,0.50);
   max-width: 100%;
   text-align: center;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  transition: color 0.2s;
 }
 .author-overlay {
   font-size: clamp(6px, 0.7vw, 9px);
   letter-spacing: 0.05em;
-  color: rgba(200,224,255,0.14);
+  transition: color 0.2s;
 }
 
 /* Error */
