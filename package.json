@@ -1,0 +1,19 @@
+{
+  "name": "urban-veins",
+  "version": "1.0.0",
+  "description": "Neon city road network visualizer powered by OpenStreetMap",
+  "author": "Urban Veins",
+  "license": "MIT",
+  "scripts": {
+    "dev": "vite --port 5173",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "vue": "^3.4.21"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.0.4",
+    "vite": "^5.2.0"
+  }
+}
