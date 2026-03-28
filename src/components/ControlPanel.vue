@@ -50,7 +50,7 @@
         <div class="color-row">
           <span class="clabel">Fondo del mapa</span>
           <div class="cinput">
-            <input type="color" :value="localBg" @input="onBg($event.target.value)" />
+            <button class="color-swatch" :class="{ active: activePicker === 'bg' }" :style="{ background: localBg }" @click="openPicker('bg')"></button>
             <button class="xbtn" @click="onBg('')">✕</button>
           </div>
         </div>
@@ -64,7 +64,7 @@
             <span class="type-dot" :style="{ background: roadColor(item.type) || item.color }"></span>
             <span class="clabel">{{ item.label }}</span>
             <div class="cinput">
-              <input type="color" :value="roadColor(item.type) || item.color" @input="onRoad(item.type, $event.target.value)" />
+              <button class="color-swatch" :class="{ active: activePicker === item.type }" :style="{ background: roadColor(item.type) || item.color }" @click="openPicker(item.type)"></button>
               <button class="xbtn" @click="onRoad(item.type, '')">✕</button>
             </div>
           </div>
@@ -77,7 +77,7 @@
         <div class="color-row">
           <span class="clabel">Color del nombre</span>
           <div class="cinput">
-            <input type="color" :value="localCityName" @input="onCityName($event.target.value)" />
+            <button class="color-swatch" :class="{ active: activePicker === 'cityName' }" :style="{ background: localCityName }" @click="openPicker('cityName')"></button>
             <button class="xbtn" @click="onCityName('')">✕</button>
           </div>
         </div>
@@ -111,13 +111,34 @@
         Datos © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a><br />
         Licencia: <a href="https://opendatacommons.org/licenses/odbl/1-0/" target="_blank" rel="noopener">ODbL 1.0</a>
       </div>
-
     </div>
+
+    <!-- Spectrum color picker — pinned at bottom of panel -->
+    <Transition name="sp-slide">
+      <div class="spectrum-panel" v-if="activePicker && !collapsed">
+        <div class="sp-header">
+          <span class="sp-label">{{ pickerLabel }}</span>
+          <button class="sp-close" @click="activePicker = null">✕</button>
+        </div>
+        <canvas
+          ref="pickerCanvas"
+          class="sp-canvas"
+          @pointerdown.prevent="onPickerDown"
+          @pointermove="onPickerMove"
+          @pointerup="onPickerUp"
+          @pointercancel="onPickerUp"
+        ></canvas>
+        <div class="sp-footer">
+          <div class="sp-dot" :style="{ background: pickerColor }"></div>
+          <code class="sp-hex">{{ pickerColor }}</code>
+        </div>
+      </div>
+    </Transition>
   </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, nextTick } from 'vue'
 import { COLOR_SCHEMES } from '../lib/renderer.js'
 
 const props = defineProps({
@@ -129,7 +150,6 @@ const props = defineProps({
 })
 const emit = defineEmits(['change-settings', 'change-colors', 'change-dedication', 'export-png', 'export-svg'])
 
-// Collapse by default on small screens
 const collapsed = ref(window.innerWidth < 640)
 
 const schemes = Object.values(COLOR_SCHEMES).map(s => ({ id: s.id, name: s.name, preview: s.preview }))
@@ -138,6 +158,90 @@ const activeLegend = computed(() => COLOR_SCHEMES[props.settings.colorScheme]?.l
 const localBg       = ref('#050510')
 const localCityName = ref('#c8e0ff')
 
+// ── Spectrum picker ──────────────────────────────────────────────
+const activePicker = ref(null)
+const pickerCanvas = ref(null)
+const pickerColor  = ref('#00d4ff')
+let picking = false
+
+const PICKER_LABELS = {
+  bg: 'Fondo del mapa', cityName: 'Nombre ciudad',
+  motorway: 'Autopista', trunk: 'Vía rápida', primary: 'Principal',
+  secondary: 'Secundaria', tertiary: 'Terciaria', minor: 'Menor',
+}
+const pickerLabel = computed(() => PICKER_LABELS[activePicker.value] || '')
+
+function openPicker(key) {
+  if (activePicker.value === key) { activePicker.value = null; return }
+  activePicker.value = key
+  if (key === 'bg') pickerColor.value = localBg.value
+  else if (key === 'cityName') pickerColor.value = localCityName.value
+  else pickerColor.value = props.customColors.roads?.[key] || '#ffffff'
+  nextTick(() => drawSpectrum())
+}
+
+function drawSpectrum() {
+  const c = pickerCanvas.value
+  if (!c) return
+  const dpr = Math.min(window.devicePixelRatio || 1, 2)
+  const w = c.offsetWidth
+  const h = c.offsetHeight
+  c.width  = Math.round(w * dpr)
+  c.height = Math.round(h * dpr)
+  const ctx = c.getContext('2d')
+  ctx.scale(dpr, dpr)
+
+  // Full hue spectrum (horizontal)
+  const hGrad = ctx.createLinearGradient(0, 0, w, 0)
+  ;[0, 60, 120, 180, 240, 300, 360].forEach((hue, i) => hGrad.addColorStop(i / 6, `hsl(${hue},100%,50%)`))
+  ctx.fillStyle = hGrad
+  ctx.fillRect(0, 0, w, h)
+
+  // White fade top→mid
+  const wGrad = ctx.createLinearGradient(0, 0, 0, h)
+  wGrad.addColorStop(0,   'rgba(255,255,255,1)')
+  wGrad.addColorStop(0.5, 'rgba(255,255,255,0)')
+  ctx.fillStyle = wGrad
+  ctx.fillRect(0, 0, w, h)
+
+  // Black fade mid→bottom
+  const bGrad = ctx.createLinearGradient(0, 0, 0, h)
+  bGrad.addColorStop(0.5, 'rgba(0,0,0,0)')
+  bGrad.addColorStop(1,   'rgba(0,0,0,1)')
+  ctx.fillStyle = bGrad
+  ctx.fillRect(0, 0, w, h)
+}
+
+function pickAt(clientX, clientY) {
+  const c = pickerCanvas.value
+  if (!c) return
+  const rect = c.getBoundingClientRect()
+  const dpr = Math.min(window.devicePixelRatio || 1, 2)
+  const x = Math.max(0, Math.min(Math.round((clientX - rect.left) * dpr), c.width - 1))
+  const y = Math.max(0, Math.min(Math.round((clientY - rect.top)  * dpr), c.height - 1))
+  const [r, g, b] = c.getContext('2d').getImageData(x, y, 1, 1).data
+  const hex = '#' + [r, g, b].map(v => v.toString(16).padStart(2, '0')).join('')
+  pickerColor.value = hex
+  applyPickerColor(hex)
+}
+
+function onPickerDown(e) {
+  picking = true
+  pickerCanvas.value?.setPointerCapture(e.pointerId)
+  pickAt(e.clientX, e.clientY)
+}
+function onPickerMove(e) { if (picking) pickAt(e.clientX, e.clientY) }
+function onPickerUp()    { picking = false }
+
+function applyPickerColor(hex) {
+  const key = activePicker.value
+  if (!key) return
+  if (key === 'bg') onBg(hex)
+  else if (key === 'cityName') onCityName(hex)
+  else onRoad(key, hex)
+}
+
+// ── Standard handlers ────────────────────────────────────────────
 function roadColor(type) { return props.customColors.roads?.[type] || '' }
 
 function changeSettings(key, value) {
@@ -162,7 +266,7 @@ function fmtNum(n) { return n ? n.toLocaleString() : '0' }
 </script>
 
 <style scoped>
-/* ── Panel (izquierda) ── */
+/* ── Panel ── */
 .panel {
   position: absolute;
   left: 0; top: 50px; bottom: 0;
@@ -170,17 +274,14 @@ function fmtNum(n) { return n ? n.toLocaleString() : '0' }
   background: rgba(6, 9, 26, 0.96);
   border-right: 1px solid rgba(0, 212, 255, 0.18);
   display: flex;
+  flex-direction: column;
   z-index: 10;
   overflow: visible;
   transition: width 0.25s ease;
   backdrop-filter: blur(16px);
   box-shadow: 4px 0 28px rgba(0, 0, 0, 0.5);
 }
-/* Fully hidden when collapsed — no strip */
-.panel.collapsed {
-  width: 0;
-  border-right: none;
-}
+.panel.collapsed { width: 0; border-right: none; }
 
 .toggle-btn {
   position: absolute;
@@ -195,6 +296,7 @@ function fmtNum(n) { return n ? n.toLocaleString() : '0' }
   display: flex; align-items: center; justify-content: center;
   cursor: pointer; padding: 0;
   backdrop-filter: blur(12px);
+  z-index: 1;
 }
 .toggle-btn:hover { background: rgba(0, 212, 255, 0.08); }
 
@@ -204,8 +306,6 @@ function fmtNum(n) { return n ? n.toLocaleString() : '0' }
   display: flex; flex-direction: column; gap: 2px;
   min-width: 230px;
 }
-
-/* Scrollbar */
 .panel-inner::-webkit-scrollbar { width: 4px; }
 .panel-inner::-webkit-scrollbar-track { background: transparent; }
 .panel-inner::-webkit-scrollbar-thumb { background: rgba(0,212,255,0.2); border-radius: 2px; }
@@ -274,18 +374,23 @@ function fmtNum(n) { return n ? n.toLocaleString() : '0' }
   font-size: 11px; color: var(--text-dim); flex: 1;
   min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
-.cinput { display: flex; align-items: center; gap: 3px; flex-shrink: 0; }
+.cinput { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
 
-input[type="color"] {
-  width: 30px; height: 20px;
-  padding: 1px 2px;
-  border: 1px solid rgba(0,212,255,0.22);
-  background: rgba(255,255,255,0.05); cursor: pointer; border-radius: 2px;
+/* Color swatch button (opens spectrum picker) */
+.color-swatch {
+  width: 32px; height: 20px;
+  border: 1px solid rgba(0,212,255,0.25);
+  cursor: pointer; border-radius: 2px;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  flex-shrink: 0;
 }
-input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
-input[type="color"]::-webkit-color-swatch { border: none; }
+.color-swatch:hover { border-color: rgba(0,212,255,0.6); }
+.color-swatch.active {
+  border-color: var(--cyan);
+  box-shadow: 0 0 6px rgba(0,212,255,0.5);
+}
 
-/* X button — red, always visible */
+/* X button */
 .xbtn {
   width: 18px; height: 18px; padding: 0;
   font-size: 10px; font-weight: bold;
@@ -296,30 +401,22 @@ input[type="color"]::-webkit-color-swatch { border: none; }
   cursor: pointer;
   transition: all 0.15s;
 }
-.xbtn:hover { background: rgba(220, 50, 50, 0.25); border-color: #ff4444; color: #ff3333; }
+.xbtn:hover { background: rgba(220, 50, 50, 0.25); border-color: #ff4444; }
 
 /* Dedication */
-.ded-hint {
-  font-size: 9px; color: rgba(0,212,255,0.4);
-  margin-bottom: 5px; letter-spacing: 0.04em;
-}
+.ded-hint { font-size: 9px; color: rgba(0,212,255,0.4); margin-bottom: 5px; }
 .ded-input {
   width: 100%; resize: none;
   padding: 7px 9px; font-size: 11px;
   font-style: italic; letter-spacing: 0.04em;
   border: 1px solid rgba(0,212,255,0.2);
   background: rgba(255,255,255,0.04); color: var(--text);
-  outline: none;
-  transition: border-color 0.15s;
-  font-family: var(--font);
-  line-height: 1.5;
+  outline: none; transition: border-color 0.15s;
+  font-family: var(--font); line-height: 1.5;
 }
 .ded-input::placeholder { color: rgba(200,224,255,0.25); font-style: italic; }
 .ded-input:focus { border-color: rgba(0,212,255,0.5); }
-.ded-counter {
-  font-size: 9px; color: var(--text-dim);
-  text-align: right; margin-top: 2px;
-}
+.ded-counter { font-size: 9px; color: var(--text-dim); text-align: right; margin-top: 2px; }
 
 /* Export */
 .export-btn {
@@ -340,15 +437,58 @@ input[type="color"]::-webkit-color-swatch { border: none; }
 .attribution a { color: rgba(0,212,255,0.35); }
 .attribution a:hover { color: var(--cyan); }
 
+/* ── Spectrum picker ── */
+.spectrum-panel {
+  flex-shrink: 0;
+  padding: 10px 12px 12px;
+  background: rgba(3, 5, 18, 0.99);
+  border-top: 1px solid rgba(0,212,255,0.2);
+  min-width: 230px;
+}
+.sp-header {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 7px;
+}
+.sp-label { font-size: 10px; color: rgba(0,212,255,0.6); letter-spacing: 0.1em; }
+.sp-close {
+  width: 18px; height: 18px; padding: 0; font-size: 9px;
+  border: 1px solid rgba(0,212,255,0.2); color: var(--text-dim);
+  background: transparent; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+}
+.sp-close:hover { border-color: var(--cyan); color: var(--cyan); }
+
+.sp-canvas {
+  width: 100%; height: 110px;
+  cursor: crosshair; touch-action: none;
+  display: block; border-radius: 2px;
+}
+.sp-footer {
+  display: flex; align-items: center; gap: 8px;
+  margin-top: 7px;
+}
+.sp-dot {
+  width: 28px; height: 20px;
+  border-radius: 2px;
+  border: 1px solid rgba(0,212,255,0.25);
+  flex-shrink: 0;
+}
+.sp-hex { font-size: 11px; color: var(--text-dim); letter-spacing: 0.05em; }
+
+/* Spectrum slide transition */
+.sp-slide-enter-active, .sp-slide-leave-active { transition: transform 0.2s ease, opacity 0.2s; }
+.sp-slide-enter-from, .sp-slide-leave-to { transform: translateY(20px); opacity: 0; }
+
 /* ── Responsive ── */
 @media (max-width: 900px) {
   .panel { width: 210px; }
-  .panel.collapsed { width: 0; border-right: none; }
   .panel-inner { min-width: 210px; }
+  .spectrum-panel { min-width: 210px; }
 }
 @media (max-width: 640px) {
   .panel { width: 200px; top: 44px; }
   .panel.collapsed { width: 0; border-right: none; }
   .panel-inner { min-width: 200px; padding: 10px 9px; }
+  .spectrum-panel { min-width: 200px; }
 }
 </style>

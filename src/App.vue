@@ -110,10 +110,16 @@ const customColors = reactive({
 let renderer = null
 
 function handleResize() {
+  setVh()
   renderer?.resize(window.innerWidth, window.innerHeight)
 }
 
+function setVh() {
+  document.documentElement.style.setProperty('--vh', `${window.innerHeight * 0.01}px`)
+}
+
 onMounted(() => {
+  setVh()
   renderer = new NeonRenderer(canvasRef.value)
   renderer.resize(window.innerWidth, window.innerHeight)
   window.addEventListener('resize', handleResize)
@@ -223,7 +229,8 @@ function startOver() {
 </script>
 
 <style scoped>
-.app { width: 100vw; height: 100vh; position: relative; overflow: hidden; }
+/* Use JS-measured height to avoid mobile browser chrome issues */
+.app { width: 100vw; height: calc(var(--vh, 1vh) * 100); position: relative; overflow: hidden; }
 
 .canvas {
   position: absolute; inset: 0;
@@ -295,10 +302,10 @@ function startOver() {
   line-height: 1.5;
 }
 
-/* City + author overlays */
+/* City + author overlays — use fixed so they're relative to real viewport */
 .overlays {
-  position: absolute;
-  bottom: max(28px, env(safe-area-inset-bottom, 0px) + 20px);
+  position: fixed;
+  bottom: calc(32px + env(safe-area-inset-bottom, 0px));
   left: 0; right: 0;
   display: flex;
   flex-direction: column;
