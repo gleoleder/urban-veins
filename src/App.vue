@@ -103,6 +103,8 @@ const stats = reactive({ ways: 0, nodes: 0 })
 const renderSettings = reactive({ colorScheme: 'neon', glowEnabled: true })
 const customColors = reactive({
   cityName: 'rgba(200,224,255,0.45)',
+  dedicationColor: '',
+  authorColor: '',
   background: '',
   roads: { motorway: '', trunk: '', primary: '', secondary: '', tertiary: '', minor: '' },
 })
@@ -183,9 +185,10 @@ function onSettingsChange(newSettings) {
   if (renderer) {
     renderer.setColorScheme(newSettings.colorScheme)
     renderer.setGlow(newSettings.glowEnabled)
-    // Reset custom road colors when switching scheme
     for (const type of Object.keys(customColors.roads)) customColors.roads[type] = ''
     customColors.background = ''
+    customColors.dedicationColor = ''
+    customColors.authorColor = ''
   }
 }
 
@@ -197,6 +200,8 @@ function onColorsChange(delta) {
   if ('cityName' in delta) {
     customColors.cityName = delta.cityName || 'rgba(200,224,255,0.45)'
   }
+  if ('dedicationColor' in delta) customColors.dedicationColor = delta.dedicationColor
+  if ('authorColor' in delta)     customColors.authorColor = delta.authorColor
   if ('roads' in delta) {
     for (const [type, color] of Object.entries(delta.roads)) {
       customColors.roads[type] = color
@@ -209,12 +214,12 @@ function resetView() { renderer?.reset() }
 
 function exportPNG() {
   const filename = cityShortName.value.replace(/\s+/g, '-').toLowerCase() || 'mapleu'
-  renderer?.toPNG(filename, cityShortName.value, customColors.cityName, dedication.value)
+  renderer?.toPNG(filename, cityShortName.value, customColors.cityName, dedication.value, customColors.dedicationColor, customColors.authorColor)
 }
 
 function exportSVG() {
   const filename = cityShortName.value.replace(/\s+/g, '-').toLowerCase() || 'mapleu'
-  renderer?.toSVG(filename, cityShortName.value, customColors.cityName, dedication.value)
+  renderer?.toSVG(filename, cityShortName.value, customColors.cityName, dedication.value, customColors.dedicationColor, customColors.authorColor)
 }
 
 function startOver() {
@@ -223,6 +228,8 @@ function startOver() {
   dedication.value = ''
   customColors.background = ''
   customColors.cityName = 'rgba(200,224,255,0.45)'
+  customColors.dedicationColor = ''
+  customColors.authorColor = ''
   for (const type of Object.keys(customColors.roads)) customColors.roads[type] = ''
   renderer?.clear()
 }

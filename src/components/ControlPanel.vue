@@ -71,14 +71,28 @@
         </div>
       </div>
 
-      <!-- Color nombre ciudad -->
+      <!-- Textos en pantalla -->
       <div class="section">
-        <div class="stitle">NOMBRE EN PANTALLA</div>
+        <div class="stitle">TEXTOS EN PANTALLA</div>
         <div class="color-row">
-          <span class="clabel">Color del nombre</span>
+          <span class="clabel">Nombre ciudad</span>
           <div class="cinput">
             <button class="color-swatch" :class="{ active: activePicker === 'cityName' }" :style="{ background: localCityName }" @click="openPicker('cityName')"></button>
             <button class="xbtn" @click="onCityName('')">✕</button>
+          </div>
+        </div>
+        <div class="color-row">
+          <span class="clabel">Dedicatoria</span>
+          <div class="cinput">
+            <button class="color-swatch" :class="{ active: activePicker === 'dedicationColor' }" :style="{ background: localDedicationColor || 'rgba(200,224,255,0.5)' }" @click="openPicker('dedicationColor')"></button>
+            <button class="xbtn" @click="onDedicationColor('')">✕</button>
+          </div>
+        </div>
+        <div class="color-row">
+          <span class="clabel">Elaborado por</span>
+          <div class="cinput">
+            <button class="color-swatch" :class="{ active: activePicker === 'authorColor' }" :style="{ background: localAuthorColor || 'rgba(200,224,255,0.15)' }" @click="openPicker('authorColor')"></button>
+            <button class="xbtn" @click="onAuthorColor('')">✕</button>
           </div>
         </div>
       </div>
@@ -155,8 +169,10 @@ const collapsed = ref(window.innerWidth < 640)
 const schemes = Object.values(COLOR_SCHEMES).map(s => ({ id: s.id, name: s.name, preview: s.preview }))
 const activeLegend = computed(() => COLOR_SCHEMES[props.settings.colorScheme]?.legend || COLOR_SCHEMES.neon.legend)
 
-const localBg       = ref('#050510')
-const localCityName = ref('#c8e0ff')
+const localBg              = ref('#050510')
+const localCityName        = ref('#c8e0ff')
+const localDedicationColor = ref('')
+const localAuthorColor     = ref('')
 
 // ── Spectrum picker ──────────────────────────────────────────────
 const activePicker = ref(null)
@@ -166,6 +182,7 @@ let picking = false
 
 const PICKER_LABELS = {
   bg: 'Fondo del mapa', cityName: 'Nombre ciudad',
+  dedicationColor: 'Color dedicatoria', authorColor: 'Color elaborado por',
   motorway: 'Autopista', trunk: 'Vía rápida', primary: 'Principal',
   secondary: 'Secundaria', tertiary: 'Terciaria', minor: 'Menor',
 }
@@ -176,6 +193,8 @@ function openPicker(key) {
   activePicker.value = key
   if (key === 'bg') pickerColor.value = localBg.value
   else if (key === 'cityName') pickerColor.value = localCityName.value
+  else if (key === 'dedicationColor') pickerColor.value = localDedicationColor.value || '#c8e0ff'
+  else if (key === 'authorColor') pickerColor.value = localAuthorColor.value || '#c8e0ff'
   else pickerColor.value = props.customColors.roads?.[key] || '#ffffff'
   nextTick(() => drawSpectrum())
 }
@@ -238,6 +257,8 @@ function applyPickerColor(hex) {
   if (!key) return
   if (key === 'bg') onBg(hex)
   else if (key === 'cityName') onCityName(hex)
+  else if (key === 'dedicationColor') onDedicationColor(hex)
+  else if (key === 'authorColor') onAuthorColor(hex)
   else onRoad(key, hex)
 }
 
@@ -260,6 +281,16 @@ function onRoad(type, val) {
 function onCityName(val) {
   localCityName.value = val || '#c8e0ff'
   emit('change-colors', { cityName: val || '' })
+}
+
+function onDedicationColor(val) {
+  localDedicationColor.value = val || ''
+  emit('change-colors', { dedicationColor: val || '' })
+}
+
+function onAuthorColor(val) {
+  localAuthorColor.value = val || ''
+  emit('change-colors', { authorColor: val || '' })
 }
 
 function fmtNum(n) { return n ? n.toLocaleString() : '0' }

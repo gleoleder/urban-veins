@@ -367,7 +367,7 @@ export class NeonRenderer {
 
   // ── Export ──────────────────────────────────────────────────────
 
-  toPNG(filename = 'mapleu', cityName = '', cityNameColor = '', dedication = '') {
+  toPNG(filename = 'mapleu', cityName = '', cityNameColor = '', dedication = '', dedicationColor = '', authorColor = '') {
     const dpr = this._dpr
     const w = this._lw
     const h = this._lh
@@ -382,35 +382,43 @@ export class NeonRenderer {
     ectx.scale(dpr, dpr)
 
     if (cityName) {
-      const fontSize = Math.max(28, Math.min(w * 0.05, 56))
+      // Font size capped to fit width — prevents clipping on small screens
+      const maxW = w * 0.88
+      const baseFontSize = Math.max(20, Math.min(w * 0.05, 56))
+      const cityText = cityName.toUpperCase()
+      // Measure and scale down if needed
+      ectx.font = `bold ${baseFontSize}px monospace`
+      const measured = ectx.measureText(cityText).width
+      const fontSize = measured > maxW ? Math.floor(baseFontSize * (maxW / measured)) : baseFontSize
+
       const authorSize = Math.max(7, Math.round(fontSize * 0.13))
-      const dedSize = Math.max(11, Math.round(fontSize * 0.21))
+      const dedSize = Math.max(10, Math.round(fontSize * 0.21))
       const cleanDed = dedication ? dedication.replace(/[\r\n]+/g, ' ').trim() : ''
+
+      const dedCol    = dedicationColor || 'rgba(200,224,255,0.50)'
+      const authCol   = authorColor     || 'rgba(200,224,255,0.15)'
 
       ectx.textAlign = 'center'
 
       // Author — very bottom, barely visible
       const authorY = h - 14
       ectx.font = `${authorSize}px monospace`
-      ectx.fillStyle = 'rgba(200,224,255,0.15)'
-      ectx.fillText(AUTHOR, w / 2, authorY)
+      ectx.fillStyle = authCol
+      ectx.fillText(AUTHOR, w / 2, authorY, maxW)
 
-      // Dedication (if any)
       if (cleanDed) {
         const dedY = authorY - authorSize - 7
         ectx.font = `italic ${dedSize}px monospace`
-        ectx.fillStyle = 'rgba(200,224,255,0.50)'
-        ectx.fillText(cleanDed, w / 2, dedY)
+        ectx.fillStyle = dedCol
+        ectx.fillText(cleanDed, w / 2, dedY, maxW)
 
-        // City name above dedication
         ectx.font = `bold ${fontSize}px monospace`
         ectx.fillStyle = cityNameColor || 'rgba(200,224,255,0.55)'
-        ectx.fillText(cityName.toUpperCase(), w / 2, dedY - dedSize - 10)
+        ectx.fillText(cityText, w / 2, dedY - dedSize - 10, maxW)
       } else {
-        // City name directly above author
         ectx.font = `bold ${fontSize}px monospace`
         ectx.fillStyle = cityNameColor || 'rgba(200,224,255,0.55)'
-        ectx.fillText(cityName.toUpperCase(), w / 2, authorY - authorSize - 18)
+        ectx.fillText(cityText, w / 2, authorY - authorSize - 18, maxW)
       }
     }
 
@@ -426,7 +434,7 @@ export class NeonRenderer {
     link.click()
   }
 
-  toSVG(filename = 'mapleu', cityName = '', cityNameColor = '', dedication = '') {
+  toSVG(filename = 'mapleu', cityName = '', cityNameColor = '', dedication = '', dedicationColor = '', authorColor = '') {
     if (!this.network) return
     const b = this.network.bounds
     const w = this._lw
@@ -479,27 +487,35 @@ export class NeonRenderer {
     const tyi = (-h / 2).toFixed(3)
 
     const bg = this._customBackground || this.scheme.background
-    const fontSize = Math.max(28, Math.min(w * 0.05, 56))
+    const baseFontSize = Math.max(20, Math.min(w * 0.05, 56))
     const nameColor = cityNameColor || 'rgba(200,224,255,0.55)'
-    const authorSize = Math.max(7, Math.round(fontSize * 0.13))
-    const dedSize = Math.max(11, Math.round(fontSize * 0.21))
+    const authorSize = Math.max(7, Math.round(baseFontSize * 0.13))
+    const dedSize = Math.max(10, Math.round(baseFontSize * 0.21))
     const cleanDed = dedication ? dedication.replace(/[\r\n]+/g, ' ').trim() : ''
+    const dedCol  = dedicationColor || 'rgba(200,224,255,0.50)'
+    const authCol = authorColor     || 'rgba(200,224,255,0.15)'
+
+    // Scale city font down if too wide (monospace ≈ 0.62em per char)
+    const cityText  = cityName.toUpperCase()
+    const maxTextW  = w * 0.88
+    const estWidth  = baseFontSize * 0.62 * cityText.length
+    const fontSize  = estWidth > maxTextW ? Math.max(14, Math.floor(baseFontSize * maxTextW / estWidth)) : baseFontSize
 
     const authorY = h - 14
     let cityBlock = ''
     if (cityName) {
       if (cleanDed) {
-        const dedY = authorY - authorSize - 7
+        const dedY  = authorY - authorSize - 7
         const cityY = dedY - dedSize - 10
         cityBlock = `
-  <text x="${w/2}" y="${cityY}" font-family="monospace" font-size="${fontSize}" font-weight="bold" fill="${nameColor}" text-anchor="middle">${cityName.toUpperCase()}</text>
-  <text x="${w/2}" y="${dedY}" font-family="monospace" font-size="${dedSize}" font-style="italic" fill="rgba(200,224,255,0.50)" text-anchor="middle">${cleanDed}</text>
-  <text x="${w/2}" y="${authorY}" font-family="monospace" font-size="${authorSize}" fill="rgba(200,224,255,0.15)" text-anchor="middle">${AUTHOR}</text>`
+  <text x="${w/2}" y="${cityY}" font-family="monospace" font-size="${fontSize}" font-weight="bold" fill="${nameColor}" text-anchor="middle">${cityText}</text>
+  <text x="${w/2}" y="${dedY}" font-family="monospace" font-size="${dedSize}" font-style="italic" fill="${dedCol}" text-anchor="middle">${cleanDed}</text>
+  <text x="${w/2}" y="${authorY}" font-family="monospace" font-size="${authorSize}" fill="${authCol}" text-anchor="middle">${AUTHOR}</text>`
       } else {
         const cityY = authorY - authorSize - 18
         cityBlock = `
-  <text x="${w/2}" y="${cityY}" font-family="monospace" font-size="${fontSize}" font-weight="bold" fill="${nameColor}" text-anchor="middle">${cityName.toUpperCase()}</text>
-  <text x="${w/2}" y="${authorY}" font-family="monospace" font-size="${authorSize}" fill="rgba(200,224,255,0.15)" text-anchor="middle">${AUTHOR}</text>`
+  <text x="${w/2}" y="${cityY}" font-family="monospace" font-size="${fontSize}" font-weight="bold" fill="${nameColor}" text-anchor="middle">${cityText}</text>
+  <text x="${w/2}" y="${authorY}" font-family="monospace" font-size="${authorSize}" fill="${authCol}" text-anchor="middle">${AUTHOR}</text>`
       }
     }
 
