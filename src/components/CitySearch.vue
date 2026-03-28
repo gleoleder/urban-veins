@@ -114,6 +114,7 @@ function select(s) {
     osmType: s.osm_type,
     lat: parseFloat(s.lat),
     lon: parseFloat(s.lon),
+    bbox: s.boundingbox, // [south, north, west, east]
   })
 }
 

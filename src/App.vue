@@ -33,19 +33,25 @@
 
     <!-- Nombre de ciudad en pantalla -->
     <Transition name="fade">
-      <div class="city-overlay" v-if="appState === 'loaded'">
+      <div
+        class="city-overlay"
+        v-if="appState === 'loaded'"
+        :style="{ color: customColors.cityName }"
+      >
         {{ cityShortName }}
       </div>
     </Transition>
 
-    <!-- Control Panel (loaded) -->
+    <!-- Control Panel -->
     <Transition name="slide-right">
       <ControlPanel
         v-if="appState === 'loaded'"
         :cityName="cityShortName"
         :stats="stats"
         :settings="renderSettings"
+        :customColors="customColors"
         @change-settings="onSettingsChange"
+        @change-colors="onColorsChange"
         @export-png="exportPNG"
         @export-svg="exportSVG"
       />
@@ -58,13 +64,12 @@
       </div>
     </Transition>
 
-    <!-- Attribution (always visible) -->
+    <!-- Attribution -->
     <div class="attribution-bar">
       &#169; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a>
       &nbsp;|&nbsp;
       <a href="https://opendatacommons.org/licenses/odbl/" target="_blank" rel="noopener">ODbL 1.0</a>
     </div>
-
   </div>
 </template>
 
@@ -79,7 +84,7 @@ import { placeToAreaId } from './lib/geocoding.js'
 import { RoadNetwork } from './lib/roadData.js'
 
 const canvasRef = ref(null)
-const appState = ref('idle') // idle | loading | loaded
+const appState = ref('idle')
 const loadingCityName = ref('')
 const cityShortName = ref('')
 const loadProgress = ref(0)
@@ -88,6 +93,11 @@ const errorMsg = ref(null)
 
 const stats = reactive({ ways: 0, nodes: 0 })
 const renderSettings = reactive({ colorScheme: 'neon', glowEnabled: true })
+const customColors = reactive({
+  cityName: 'rgba(200,224,255,0.08)',
+  background: '',
+  lines: '',
+})
 
 let renderer = null
 
@@ -113,12 +123,13 @@ async function onCitySelected(place) {
   errorMsg.value = null
 
   try {
-    const areaId = placeToAreaId(place.osmType, place.osmId)
+    // areaId is null for nodes (they have no OSM area)
+    const areaId = place.osmType === 'node' ? null : placeToAreaId(place.osmType, place.osmId)
 
     loadStatus.value = 'Descargando red vial...'
-    const osmData = await fetchRoads(areaId, p => {
+    const osmData = await fetchRoads(areaId, place.bbox, p => {
       loadProgress.value = p
-      loadStatus.value = p < 50 ? 'Descargando datos de calles...' : 'Procesando segmentos...'
+      loadStatus.value = p < 55 ? 'Descargando datos de calles...' : 'Procesando segmentos...'
     })
 
     loadStatus.value = 'Construyendo red...'
@@ -127,7 +138,7 @@ async function onCitySelected(place) {
     const network = RoadNetwork.fromOSMResponse(osmData)
 
     if (network.ways.length === 0) {
-      throw new Error('No se encontraron calles. Intenta con una ciudad más grande.')
+      throw new Error('No se encontraron calles. Intenta con otra ciudad o un área más grande.')
     }
 
     stats.ways = network.ways.length
@@ -138,6 +149,8 @@ async function onCitySelected(place) {
 
     renderer.setColorScheme(renderSettings.colorScheme)
     renderer.setGlow(renderSettings.glowEnabled)
+    if (customColors.background) renderer.setBackground(customColors.background)
+    if (customColors.lines) renderer.setCustomLineColor(customColors.lines)
     renderer.setNetwork(network)
 
     loadProgress.value = 100
@@ -146,7 +159,7 @@ async function onCitySelected(place) {
   } catch (e) {
     appState.value = 'idle'
     errorMsg.value = e.message || 'Error al cargar los datos. Por favor intenta de nuevo.'
-    setTimeout(() => { errorMsg.value = null }, 6000)
+    setTimeout(() => { errorMsg.value = null }, 7000)
   }
 }
 
@@ -155,6 +168,17 @@ function onSettingsChange(newSettings) {
   if (renderer) {
     renderer.setColorScheme(newSettings.colorScheme)
     renderer.setGlow(newSettings.glowEnabled)
+    // Reset custom colors when switching scheme
+    customColors.background = ''
+    customColors.lines = ''
+  }
+}
+
+function onColorsChange(colors) {
+  Object.assign(customColors, colors)
+  if (renderer) {
+    if (colors.background !== undefined) renderer.setBackground(colors.background || null)
+    if (colors.lines !== undefined) renderer.setCustomLineColor(colors.lines || null)
   }
 }
 
@@ -173,6 +197,9 @@ function exportSVG() {
 function startOver() {
   appState.value = 'idle'
   cityShortName.value = ''
+  customColors.background = ''
+  customColors.lines = ''
+  customColors.cityName = 'rgba(200,224,255,0.08)'
   renderer?.clear()
 }
 </script>
@@ -195,7 +222,6 @@ function startOver() {
 }
 .canvas:active { cursor: grabbing; }
 
-/* Top bar */
 .topbar {
   position: absolute;
   top: 0; left: 0; right: 0;
@@ -229,7 +255,6 @@ function startOver() {
 .tb-btn.accent { border-color: rgba(0,255,159,0.3); color: #00ff9f; }
 .tb-btn.accent:hover { background: rgba(0,255,159,0.08); border-color: #00ff9f; box-shadow: 0 0 10px rgba(0,255,159,0.2); }
 
-/* Center panel */
 .center-panel {
   position: absolute;
   top: 50%;
@@ -239,7 +264,23 @@ function startOver() {
   width: min(460px, 92vw);
 }
 
-/* Error */
+/* Nombre ciudad en pantalla */
+.city-overlay {
+  position: absolute;
+  bottom: 32px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: clamp(28px, 5vw, 56px);
+  font-weight: bold;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  pointer-events: none;
+  white-space: nowrap;
+  z-index: 4;
+  user-select: none;
+  transition: color 0.3s;
+}
+
 .error-toast {
   position: absolute;
   bottom: 36px;
@@ -259,7 +300,6 @@ function startOver() {
   text-overflow: ellipsis;
 }
 
-/* Attribution bar */
 .attribution-bar {
   position: absolute;
   bottom: 8px;
@@ -273,25 +313,6 @@ function startOver() {
 .attribution-bar a { color: rgba(0,212,255,0.5); }
 .attribution-bar a:hover { color: #00d4ff; }
 
-/* Nombre ciudad en pantalla */
-.city-overlay {
-  position: absolute;
-  bottom: 32px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: clamp(28px, 5vw, 56px);
-  font-weight: bold;
-  letter-spacing: 0.12em;
-  color: rgba(200, 224, 255, 0.08);
-  text-transform: uppercase;
-  pointer-events: none;
-  white-space: nowrap;
-  z-index: 4;
-  text-shadow: 0 0 40px rgba(0, 212, 255, 0.04);
-  user-select: none;
-}
-
-/* Transitions */
 .fade-enter-active, .fade-leave-active { transition: opacity 0.25s ease; }
 .fade-enter-from, .fade-leave-to { opacity: 0; }
 

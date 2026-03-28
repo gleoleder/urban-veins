@@ -106,6 +106,8 @@ export class NeonRenderer {
     this.network = null
     this.scheme = COLOR_SCHEMES.neon
     this.glowEnabled = true
+    this._customBackground = null
+    this._customLineColor = null
 
     this.panX = 0
     this.panY = 0
@@ -130,12 +132,25 @@ export class NeonRenderer {
 
   setColorScheme(schemeId) {
     this.scheme = COLOR_SCHEMES[schemeId] || COLOR_SCHEMES.neon
+    this._customBackground = null
+    this._customLineColor = null
     if (this.network) this._renderOffscreen()
     this.draw()
   }
 
   setGlow(enabled) {
     this.glowEnabled = !!enabled
+    if (this.network) this._renderOffscreen()
+    this.draw()
+  }
+
+  setBackground(color) {
+    this._customBackground = color || null
+    this.draw()
+  }
+
+  setCustomLineColor(color) {
+    this._customLineColor = color || null
     if (this.network) this._renderOffscreen()
     this.draw()
   }
@@ -220,7 +235,7 @@ export class NeonRenderer {
 
       // Solid pass
       ctx.save()
-      ctx.strokeStyle = style.solid
+      ctx.strokeStyle = this._customLineColor || style.solid
       ctx.lineWidth = style.width
       ctx.shadowBlur = 0
       ctx.lineCap = 'round'
@@ -236,7 +251,7 @@ export class NeonRenderer {
     const w = this.canvas.width
     const h = this.canvas.height
 
-    ctx.fillStyle = this.scheme.background
+    ctx.fillStyle = this._customBackground || this.scheme.background
     ctx.fillRect(0, 0, w, h)
 
     if (!this.network) {
