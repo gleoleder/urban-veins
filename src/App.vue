@@ -102,7 +102,7 @@ const dedication = ref('')
 const stats = reactive({ ways: 0, nodes: 0 })
 const renderSettings = reactive({ colorScheme: 'neon', glowEnabled: true })
 const customColors = reactive({
-  cityName: 'rgba(200,224,255,0.10)',
+  cityName: 'rgba(200,224,255,0.45)',
   background: '',
   roads: { motorway: '', trunk: '', primary: '', secondary: '', tertiary: '', minor: '' },
 })
@@ -189,7 +189,7 @@ function onColorsChange(delta) {
     renderer?.setBackground(delta.background || null)
   }
   if ('cityName' in delta) {
-    customColors.cityName = delta.cityName || 'rgba(200,224,255,0.10)'
+    customColors.cityName = delta.cityName || 'rgba(200,224,255,0.45)'
   }
   if ('roads' in delta) {
     for (const [type, color] of Object.entries(delta.roads)) {
@@ -216,7 +216,7 @@ function startOver() {
   cityShortName.value = ''
   dedication.value = ''
   customColors.background = ''
-  customColors.cityName = 'rgba(200,224,255,0.10)'
+  customColors.cityName = 'rgba(200,224,255,0.45)'
   for (const type of Object.keys(customColors.roads)) customColors.roads[type] = ''
   renderer?.clear()
 }
@@ -298,21 +298,26 @@ function startOver() {
 /* City + author overlays */
 .overlays {
   position: absolute;
-  bottom: 28px;
+  bottom: max(28px, env(safe-area-inset-bottom, 0px) + 20px);
   left: 0; right: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: 5px;
   pointer-events: none;
-  z-index: 4;
+  z-index: 8;
   user-select: none;
+  padding: 0 16px;
 }
 .city-overlay {
-  font-size: clamp(22px, 5vw, 54px);
+  font-size: clamp(20px, 5vw, 54px);
   font-weight: bold;
   letter-spacing: 0.12em;
   text-transform: uppercase;
+  max-width: 100%;
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
   white-space: nowrap;
   transition: color 0.3s;
 }
@@ -321,7 +326,7 @@ function startOver() {
   font-style: italic;
   letter-spacing: 0.05em;
   color: rgba(200,224,255,0.50);
-  max-width: 80vw;
+  max-width: 100%;
   text-align: center;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -364,15 +369,14 @@ function startOver() {
 
 /* ── Responsive ── */
 @media (max-width: 900px) {
-  .topbar-left-space { width: 200px; }
+  .topbar-left-space { width: 210px; }
 }
 @media (max-width: 640px) {
   .topbar { height: 44px; padding: 0 12px; }
-  .topbar-left-space { width: 28px; }
+  .topbar-left-space { width: 0; }
   .logo { font-size: 14px; }
   .tb-btn { font-size: 9px; padding: 4px 8px; }
   .hero-logo { margin-bottom: 8px; }
-  .overlays { bottom: 20px; }
   .attribution-bar { font-size: 9px; right: 8px; bottom: 6px; }
 }
 @media (max-width: 400px) {
