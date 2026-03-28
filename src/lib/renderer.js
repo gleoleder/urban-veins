@@ -17,12 +17,12 @@ export const COLOR_SCHEMES = {
     background: '#050510',
     preview: 'linear-gradient(90deg, #ff2d6b 0%, #00d4ff 50%, #00ff9f 100%)',
     roads: {
-      motorway: { solid: '#ff2d6b', glow: 'rgba(255,45,107,0.35)',  width: 2.5, glowWidth: 10 },
-      trunk:    { solid: '#ff6b2d', glow: 'rgba(255,107,45,0.3)',   width: 2.0, glowWidth: 8  },
-      primary:  { solid: '#00d4ff', glow: 'rgba(0,212,255,0.3)',    width: 1.8, glowWidth: 8  },
-      secondary:{ solid: '#00ff9f', glow: 'rgba(0,255,159,0.22)',   width: 1.3, glowWidth: 5  },
-      tertiary: { solid: '#7b61ff', glow: 'rgba(123,97,255,0.18)',  width: 0.9, glowWidth: 4  },
-      minor:    { solid: '#1a2d5a', glow: null,                     width: 0.5, glowWidth: 0  },
+      motorway: { solid: '#ff2d6b', glow: 'rgba(255,45,107,0.35)',  width: 1.5, glowWidth: 6 },
+      trunk:    { solid: '#ff6b2d', glow: 'rgba(255,107,45,0.3)',   width: 1.2, glowWidth: 5 },
+      primary:  { solid: '#00d4ff', glow: 'rgba(0,212,255,0.3)',    width: 1.1, glowWidth: 5 },
+      secondary:{ solid: '#00ff9f', glow: 'rgba(0,255,159,0.22)',   width: 0.8, glowWidth: 3 },
+      tertiary: { solid: '#7b61ff', glow: 'rgba(123,97,255,0.18)',  width: 0.55, glowWidth: 3 },
+      minor:    { solid: '#1a2d5a', glow: null,                     width: 0.3, glowWidth: 0 },
     },
     legend: [
       { label: 'Autopista',   color: '#ff2d6b', type: 'motorway' },
@@ -38,12 +38,12 @@ export const COLOR_SCHEMES = {
     background: '#080808',
     preview: 'linear-gradient(90deg, #fff 0%, #aaa 50%, #444 100%)',
     roads: {
-      motorway: { solid: '#ffffff', glow: 'rgba(255,255,255,0.25)', width: 2.5, glowWidth: 7 },
-      trunk:    { solid: '#e0e0e0', glow: 'rgba(224,224,224,0.18)', width: 2.0, glowWidth: 5 },
-      primary:  { solid: '#bbbbbb', glow: 'rgba(187,187,187,0.15)', width: 1.8, glowWidth: 4 },
-      secondary:{ solid: '#888888', glow: null,                     width: 1.3, glowWidth: 0 },
-      tertiary: { solid: '#505050', glow: null,                     width: 0.9, glowWidth: 0 },
-      minor:    { solid: '#222222', glow: null,                     width: 0.5, glowWidth: 0 },
+      motorway: { solid: '#ffffff', glow: 'rgba(255,255,255,0.25)', width: 1.5, glowWidth: 4 },
+      trunk:    { solid: '#e0e0e0', glow: 'rgba(224,224,224,0.18)', width: 1.2, glowWidth: 3 },
+      primary:  { solid: '#bbbbbb', glow: 'rgba(187,187,187,0.15)', width: 1.1, glowWidth: 3 },
+      secondary:{ solid: '#888888', glow: null,                     width: 0.8, glowWidth: 0 },
+      tertiary: { solid: '#505050', glow: null,                     width: 0.55, glowWidth: 0 },
+      minor:    { solid: '#222222', glow: null,                     width: 0.3, glowWidth: 0 },
     },
     legend: [
       { label: 'Autopista',  color: '#ffffff', type: 'motorway' },
@@ -59,12 +59,12 @@ export const COLOR_SCHEMES = {
     background: '#0c0602',
     preview: 'linear-gradient(90deg, #ff6b35 0%, #ffd23f 50%, #ffcc02 100%)',
     roads: {
-      motorway: { solid: '#ff6b35', glow: 'rgba(255,107,53,0.38)', width: 2.5, glowWidth: 10 },
-      trunk:    { solid: '#ff9500', glow: 'rgba(255,149,0,0.3)',   width: 2.0, glowWidth: 7  },
-      primary:  { solid: '#ffd23f', glow: 'rgba(255,210,63,0.28)', width: 1.8, glowWidth: 7  },
-      secondary:{ solid: '#f4a261', glow: 'rgba(244,162,97,0.2)',  width: 1.3, glowWidth: 4  },
-      tertiary: { solid: '#c77c30', glow: null,                    width: 0.9, glowWidth: 0  },
-      minor:    { solid: '#3a1a04', glow: null,                    width: 0.5, glowWidth: 0  },
+      motorway: { solid: '#ff6b35', glow: 'rgba(255,107,53,0.38)', width: 1.5, glowWidth: 6 },
+      trunk:    { solid: '#ff9500', glow: 'rgba(255,149,0,0.3)',   width: 1.2, glowWidth: 4 },
+      primary:  { solid: '#ffd23f', glow: 'rgba(255,210,63,0.28)', width: 1.1, glowWidth: 4 },
+      secondary:{ solid: '#f4a261', glow: 'rgba(244,162,97,0.2)',  width: 0.8, glowWidth: 3 },
+      tertiary: { solid: '#c77c30', glow: null,                    width: 0.55, glowWidth: 0 },
+      minor:    { solid: '#3a1a04', glow: null,                    width: 0.3, glowWidth: 0 },
     },
     legend: [
       { label: 'Autopista',  color: '#ff6b35', type: 'motorway' },
@@ -80,12 +80,12 @@ export const COLOR_SCHEMES = {
     background: '#03030f',
     preview: 'linear-gradient(90deg, #4361ee 0%, #7209b7 50%, #00b4d8 100%)',
     roads: {
-      motorway: { solid: '#4361ee', glow: 'rgba(67,97,238,0.38)',  width: 2.5, glowWidth: 10 },
-      trunk:    { solid: '#7209b7', glow: 'rgba(114,9,183,0.35)',  width: 2.0, glowWidth: 7  },
-      primary:  { solid: '#00b4d8', glow: 'rgba(0,180,216,0.3)',   width: 1.8, glowWidth: 7  },
-      secondary:{ solid: '#0096c7', glow: 'rgba(0,150,199,0.22)',  width: 1.3, glowWidth: 4  },
-      tertiary: { solid: '#023e8a', glow: null,                    width: 0.9, glowWidth: 0  },
-      minor:    { solid: '#05052a', glow: null,                    width: 0.5, glowWidth: 0  },
+      motorway: { solid: '#4361ee', glow: 'rgba(67,97,238,0.38)',  width: 1.5, glowWidth: 6 },
+      trunk:    { solid: '#7209b7', glow: 'rgba(114,9,183,0.35)',  width: 1.2, glowWidth: 4 },
+      primary:  { solid: '#00b4d8', glow: 'rgba(0,180,216,0.3)',   width: 1.1, glowWidth: 4 },
+      secondary:{ solid: '#0096c7', glow: 'rgba(0,150,199,0.22)',  width: 0.8, glowWidth: 3 },
+      tertiary: { solid: '#023e8a', glow: null,                    width: 0.55, glowWidth: 0 },
+      minor:    { solid: '#05052a', glow: null,                    width: 0.3, glowWidth: 0 },
     },
     legend: [
       { label: 'Autopista',  color: '#4361ee', type: 'motorway' },
@@ -410,7 +410,7 @@ export class NeonRenderer {
     link.click()
   }
 
-  toSVG(filename = 'mapleu', cityName = '') {
+  toSVG(filename = 'mapleu', cityName = '', cityNameColor = '') {
     if (!this.network) return
     const b = this.network.bounds
     const w = this._lw
@@ -425,7 +425,7 @@ export class NeonRenderer {
     const ox = (w - (b.maxLon - b.minLon) * s) / 2
     const oy = (h - (b.maxLat - b.minLat) * s) / 2
 
-    const px = (lat, lon) => ({
+    const toXY = (lat, lon) => ({
       x: ((lon - b.minLon) * s + ox).toFixed(2),
       y: (h - ((lat - b.minLat) * s + oy)).toFixed(2),
     })
@@ -433,37 +433,54 @@ export class NeonRenderer {
     const groups = { motorway: [], trunk: [], primary: [], secondary: [], tertiary: [], minor: [] }
     for (const way of this.network.ways) groups[classifyRoad(way.tags)].push(way)
 
-    let paths = ''
+    // Build path data strings
+    let pathElems = ''
     for (const type of ROAD_ORDER) {
       const style = this.scheme.roads[type]
       const ways = groups[type]
       if (!ways.length) continue
       const color = this._customRoadColors[type] || style.solid
+      // stroke-width divided by current scale so visual thickness matches preview
+      const sw = (style.width / this.scale).toFixed(3)
       let d = ''
       for (const way of ways) {
         const pts = way.points
-        const p0 = px(pts[0].lat, pts[0].lon)
+        const p0 = toXY(pts[0].lat, pts[0].lon)
         d += `M${p0.x},${p0.y}`
         for (let i = 1; i < pts.length; i++) {
-          const p = px(pts[i].lat, pts[i].lon)
+          const p = toXY(pts[i].lat, pts[i].lon)
           d += `L${p.x},${p.y}`
         }
       }
-      paths += `<path d="${d}" stroke="${color}" stroke-width="${style.width}" fill="none" stroke-linecap="round" stroke-linejoin="round"/>\n`
+      pathElems += `    <path d="${d}" stroke="${color}" stroke-width="${sw}" fill="none" stroke-linecap="round" stroke-linejoin="round"/>\n`
     }
+
+    // Current pan/zoom transform — mirrors draw() logic exactly
+    const tx = (w / 2 + this.panX).toFixed(3)
+    const ty = (h / 2 + this.panY).toFixed(3)
+    const sc = this.scale.toFixed(6)
+    const txi = (-w / 2).toFixed(3)
+    const tyi = (-h / 2).toFixed(3)
 
     const bg = this._customBackground || this.scheme.background
     const fontSize = Math.max(28, Math.min(w * 0.05, 56))
+    const nameColor = cityNameColor || 'rgba(200,224,255,0.55)'
     const cityBlock = cityName ? `
-  <text x="${w / 2}" y="${h - 58}" font-family="monospace" font-size="${fontSize}" font-weight="bold" fill="rgba(200,224,255,0.55)" text-anchor="middle">${cityName.toUpperCase()}</text>
+  <text x="${w / 2}" y="${h - 58}" font-family="monospace" font-size="${fontSize}" font-weight="bold" fill="${nameColor}" text-anchor="middle">${cityName.toUpperCase()}</text>
   <text x="${w / 2}" y="${h - 30}" font-family="monospace" font-size="${Math.round(fontSize * 0.27)}" fill="rgba(200,224,255,0.38)" text-anchor="middle">${AUTHOR}</text>` : ''
 
     const svg = `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">
   <title>mapLeu — ${cityName || filename}</title>
   <desc>Datos de calles © OpenStreetMap contributors | ODbL 1.0</desc>
+  <defs>
+    <clipPath id="vp"><rect width="${w}" height="${h}"/></clipPath>
+  </defs>
   <rect width="${w}" height="${h}" fill="${bg}"/>
-  ${paths}${cityBlock}
+  <g clip-path="url(#vp)">
+    <g transform="translate(${tx},${ty}) scale(${sc}) translate(${txi},${tyi})">
+${pathElems}    </g>
+  </g>${cityBlock}
   <text x="${w - 8}" y="${h - 8}" font-family="monospace" font-size="11" fill="rgba(200,224,255,0.4)" text-anchor="end">© OpenStreetMap contributors | ODbL 1.0</text>
 </svg>`
 

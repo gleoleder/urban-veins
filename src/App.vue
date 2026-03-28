@@ -199,7 +199,7 @@ function exportPNG() {
 
 function exportSVG() {
   const filename = cityShortName.value.replace(/\s+/g, '-').toLowerCase() || 'mapleu'
-  renderer?.toSVG(filename, cityShortName.value)
+  renderer?.toSVG(filename, cityShortName.value, customColors.cityName)
 }
 
 function startOver() {
