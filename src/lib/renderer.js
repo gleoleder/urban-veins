@@ -401,7 +401,7 @@ export class NeonRenderer {
       ectx.textAlign = 'center'
 
       // Author — very bottom, barely visible
-      const authorY = h - 14
+      const authorY = h - 30
       ectx.font = `${authorSize}px monospace`
       ectx.fillStyle = authCol
       ectx.fillText(AUTHOR, w / 2, authorY, maxW)
