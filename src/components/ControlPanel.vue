@@ -51,7 +51,7 @@
           <span class="clabel">Fondo del mapa</span>
           <div class="cinput">
             <input type="color" :value="localBg" @input="onBg($event.target.value)" />
-            <button class="xbtn" @click="onBg('')">&#10006;</button>
+            <button class="xbtn" @click="onBg('')">✕</button>
           </div>
         </div>
       </div>
@@ -61,11 +61,11 @@
         <div class="stitle">COLOR POR TIPO DE CALLE</div>
         <div class="type-colors">
           <div v-for="item in activeLegend" :key="item.type" class="color-row">
-            <span class="type-dot" :style="{ background: roadColor(item.type) || item.color, boxShadow: `0 0 5px ${roadColor(item.type) || item.color}` }"></span>
+            <span class="type-dot" :style="{ background: roadColor(item.type) || item.color }"></span>
             <span class="clabel">{{ item.label }}</span>
             <div class="cinput">
               <input type="color" :value="roadColor(item.type) || item.color" @input="onRoad(item.type, $event.target.value)" />
-              <button class="xbtn" @click="onRoad(item.type, '')">&#10006;</button>
+              <button class="xbtn" @click="onRoad(item.type, '')">✕</button>
             </div>
           </div>
         </div>
@@ -78,7 +78,7 @@
           <span class="clabel">Color del nombre</span>
           <div class="cinput">
             <input type="color" :value="localCityName" @input="onCityName($event.target.value)" />
-            <button class="xbtn" @click="onCityName('')">&#10006;</button>
+            <button class="xbtn" @click="onCityName('')">✕</button>
           </div>
         </div>
       </div>
@@ -112,12 +112,12 @@ const props = defineProps({
 })
 const emit = defineEmits(['change-settings', 'change-colors', 'export-png', 'export-svg'])
 
-const collapsed = ref(false)
+// Collapse by default on small screens
+const collapsed = ref(window.innerWidth < 640)
 
 const schemes = Object.values(COLOR_SCHEMES).map(s => ({ id: s.id, name: s.name, preview: s.preview }))
 const activeLegend = computed(() => COLOR_SCHEMES[props.settings.colorScheme]?.legend || COLOR_SCHEMES.neon.legend)
 
-// Local hex values for color inputs
 const localBg       = ref('#050510')
 const localCityName = ref('#c8e0ff')
 
@@ -149,13 +149,14 @@ function fmtNum(n) { return n ? n.toLocaleString() : '0' }
 .panel {
   position: absolute;
   left: 0; top: 50px; bottom: 0;
-  width: 240px;
-  background: var(--panel);
-  border-right: 1px solid var(--border);
+  width: 230px;
+  background: rgba(240, 247, 255, 0.97);
+  border-right: 1px solid rgba(100, 150, 220, 0.25);
   display: flex;
   z-index: 10;
   transition: width 0.25s ease;
-  backdrop-filter: blur(12px);
+  backdrop-filter: blur(16px);
+  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.18);
 }
 .panel.collapsed { width: 28px; }
 
@@ -164,15 +165,16 @@ function fmtNum(n) { return n ? n.toLocaleString() : '0' }
   right: -28px; top: 50%;
   transform: translateY(-50%);
   width: 28px; height: 52px;
-  background: var(--panel);
-  border: 1px solid var(--border);
+  background: rgba(240, 247, 255, 0.97);
+  border: 1px solid rgba(100, 150, 220, 0.25);
   border-left: none;
-  color: var(--cyan);
+  color: #3a7bd5;
   font-size: 12px;
   display: flex; align-items: center; justify-content: center;
   cursor: pointer; padding: 0;
+  box-shadow: 3px 0 10px rgba(0,0,0,0.1);
 }
-.toggle-btn:hover { background: rgba(0,212,255,0.08); }
+.toggle-btn:hover { background: rgba(220, 237, 255, 0.99); }
 
 .panel-inner {
   flex: 1; overflow-y: auto;
@@ -180,24 +182,29 @@ function fmtNum(n) { return n ? n.toLocaleString() : '0' }
   display: flex; flex-direction: column; gap: 2px;
 }
 
+/* Custom scrollbar for light panel */
+.panel-inner::-webkit-scrollbar { width: 4px; }
+.panel-inner::-webkit-scrollbar-track { background: transparent; }
+.panel-inner::-webkit-scrollbar-thumb { background: rgba(100,150,220,0.3); border-radius: 2px; }
+
 /* City */
 .panel-city { margin-bottom: 4px; }
 .city-label {
-  font-size: 13px; color: var(--cyan);
+  font-size: 13px; color: #1a2d5a;
   letter-spacing: 0.06em; display: block;
-  margin-bottom: 3px; text-shadow: 0 0 12px rgba(0,212,255,0.3);
+  margin-bottom: 3px; font-weight: bold;
   word-break: break-word;
 }
-.city-stats { font-size: 10px; color: var(--text-dim); }
+.city-stats { font-size: 10px; color: #6a8ab0; }
 .sep { margin: 0 4px; }
 
-.div { border: none; border-top: 1px solid var(--border); margin: 8px 0; }
+.div { border: none; border-top: 1px solid rgba(100, 150, 220, 0.2); margin: 8px 0; }
 
 /* Sections */
 .section { margin-bottom: 12px; }
 .stitle {
   font-size: 9px; letter-spacing: 0.22em;
-  color: var(--text-dim); text-transform: uppercase;
+  color: #7a9cc0; text-transform: uppercase;
   margin-bottom: 7px;
 }
 
@@ -205,27 +212,34 @@ function fmtNum(n) { return n ? n.toLocaleString() : '0' }
 .schemes { display: flex; flex-direction: column; gap: 4px; }
 .scheme-btn {
   display: flex; align-items: center; gap: 7px;
-  padding: 5px 9px; font-size: 11px; letter-spacing: 0.1em;
-  border: 1px solid var(--border); transition: all 0.15s;
+  padding: 5px 9px; font-size: 11px; letter-spacing: 0.08em;
+  border: 1px solid rgba(100, 150, 220, 0.3);
+  background: #fff; color: #1a2d5a;
+  transition: all 0.15s; cursor: pointer;
+  border-radius: 4px;
 }
-.scheme-btn.active { border-color: var(--cyan); color: var(--cyan); background: rgba(0,212,255,0.08); }
+.scheme-btn:hover { background: #e8f2ff; border-color: #3a7bd5; }
+.scheme-btn.active { border-color: #3a7bd5; color: #1a5abf; background: #deeeff; }
 .swatch { width: 28px; height: 9px; border-radius: 2px; flex-shrink: 0; }
 
 /* Toggle */
-.toggle-row { display: flex; align-items: center; justify-content: space-between; cursor: pointer; font-size: 12px; color: var(--text); }
+.toggle-row {
+  display: flex; align-items: center; justify-content: space-between;
+  cursor: pointer; font-size: 12px; color: #1a2d5a;
+}
 .toggle {
   width: 34px; height: 18px;
-  background: rgba(255,255,255,0.06);
-  border: 1px solid var(--border); border-radius: 9px;
+  background: rgba(0,0,0,0.08);
+  border: 1px solid rgba(100, 150, 220, 0.35); border-radius: 9px;
   position: relative; transition: all 0.2s; flex-shrink: 0;
 }
-.toggle.on { background: rgba(0,212,255,0.15); border-color: var(--cyan); box-shadow: 0 0 8px rgba(0,212,255,0.2); }
+.toggle.on { background: rgba(58, 123, 213, 0.15); border-color: #3a7bd5; }
 .knob {
   position: absolute; top: 2px; left: 2px;
   width: 12px; height: 12px; border-radius: 50%;
-  background: var(--text-dim); transition: transform 0.2s, background 0.2s;
+  background: #aabcd8; transition: transform 0.2s, background 0.2s;
 }
-.toggle.on .knob { transform: translateX(16px); background: var(--cyan); box-shadow: 0 0 6px var(--cyan); }
+.toggle.on .knob { transform: translateX(16px); background: #3a7bd5; }
 
 /* Color rows */
 .color-row {
@@ -233,39 +247,62 @@ function fmtNum(n) { return n ? n.toLocaleString() : '0' }
   gap: 6px; margin-bottom: 6px;
 }
 .type-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
-.clabel { font-size: 11px; color: var(--text-dim); flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.clabel {
+  font-size: 11px; color: #3a5580; flex: 1;
+  min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
 .cinput { display: flex; align-items: center; gap: 3px; flex-shrink: 0; }
 
 input[type="color"] {
   width: 30px; height: 20px;
   padding: 1px 2px;
-  border: 1px solid var(--border);
-  background: transparent; cursor: pointer; border-radius: 2px;
+  border: 1px solid rgba(100, 150, 220, 0.35);
+  background: #fff; cursor: pointer; border-radius: 3px;
 }
 input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
-input[type="color"]::-webkit-color-swatch { border: none; }
+input[type="color"]::-webkit-color-swatch { border: none; border-radius: 2px; }
 
+/* X button — red, always visible */
 .xbtn {
-  width: 16px; height: 16px; padding: 0;
-  font-size: 8px; border: 1px solid rgba(255,255,255,0.1);
-  color: var(--text-dim); display: flex; align-items: center; justify-content: center;
+  width: 18px; height: 18px; padding: 0;
+  font-size: 10px; font-weight: bold;
+  border: 1px solid rgba(220, 50, 50, 0.45);
+  color: #d32f2f;
+  background: rgba(229, 57, 53, 0.07);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; border-radius: 3px;
+  transition: all 0.15s;
 }
-.xbtn:hover { border-color: var(--magenta); color: var(--magenta); background: transparent; box-shadow: none; }
+.xbtn:hover { background: rgba(229, 57, 53, 0.18); border-color: #d32f2f; color: #b71c1c; }
 
 /* Export */
 .export-btn {
   width: 100%; padding: 7px; font-size: 11px;
   letter-spacing: 0.08em; text-align: center;
-  border: 1px solid var(--border); transition: all 0.18s; display: block;
+  border: 1px solid rgba(100, 150, 220, 0.35);
+  background: #fff; color: #1a2d5a;
+  transition: all 0.18s; display: block; cursor: pointer;
+  border-radius: 4px;
 }
 .export-btn.mt6 { margin-top: 5px; }
-.export-btn:hover { border-color: var(--cyan); color: var(--cyan); background: rgba(0,212,255,0.08); }
+.export-btn:hover { border-color: #3a7bd5; color: #1a5abf; background: #deeeff; }
 
 /* Attribution */
 .attribution {
   margin-top: auto; padding-top: 10px;
-  font-size: 10px; color: rgba(200,224,255,0.25); line-height: 1.7;
+  font-size: 10px; color: #8aabcc; line-height: 1.7;
 }
-.attribution a { color: rgba(0,212,255,0.4); }
-.attribution a:hover { color: var(--cyan); }
+.attribution a { color: #3a7bd5; }
+.attribution a:hover { color: #1a5abf; }
+
+/* ── Responsive ── */
+@media (max-width: 900px) {
+  .panel { width: 200px; }
+  .panel.collapsed { width: 28px; }
+}
+@media (max-width: 640px) {
+  .panel { width: 190px; top: 44px; }
+  .panel.collapsed { width: 28px; }
+  .panel-inner { padding: 10px 9px; }
+}
 </style>

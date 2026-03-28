@@ -18,6 +18,10 @@
     <!-- City Search -->
     <Transition name="fade">
       <div class="center-panel" v-if="appState === 'idle'">
+        <div class="hero">
+          <div class="hero-logo"><span class="hl-b">[</span>map<span class="hl-a">Leu</span><span class="hl-b">]</span></div>
+          <div class="hero-tag">Regala un mapa a quien más quieres</div>
+        </div>
         <CitySearch @select="onCitySelected" />
       </div>
     </Transition>
@@ -235,7 +239,7 @@ function startOver() {
   z-index: 20;
   pointer-events: none;
 }
-.topbar-left-space { width: 240px; flex-shrink: 0; }
+.topbar-left-space { width: 230px; flex-shrink: 0; }
 .topbar-right { pointer-events: all; display: flex; gap: 6px; }
 
 .logo {
@@ -249,13 +253,40 @@ function startOver() {
 .tb-btn.accent { border-color: rgba(0,255,159,0.3); color: #00ff9f; }
 .tb-btn.accent:hover { background: rgba(0,255,159,0.08); border-color: #00ff9f; }
 
-/* Center panel */
+/* Center panel (start screen) */
 .center-panel {
   position: absolute;
   top: 50%; left: 50%;
   transform: translate(-50%, -50%);
   z-index: 25;
-  width: min(460px, 92vw);
+  width: min(480px, 94vw);
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+/* Hero — mapLeu logo + tagline */
+.hero {
+  text-align: center;
+  margin-bottom: 22px;
+  user-select: none;
+}
+.hero-logo {
+  font-size: clamp(38px, 9vw, 72px);
+  font-weight: bold;
+  letter-spacing: 0.16em;
+  color: #c8e0ff;
+  line-height: 1;
+  margin-bottom: 10px;
+  text-shadow: 0 0 40px rgba(0,212,255,0.25);
+}
+.hl-a { color: #00d4ff; }
+.hl-b { color: rgba(0,212,255,0.3); font-weight: normal; }
+.hero-tag {
+  font-size: clamp(11px, 2.2vw, 15px);
+  color: rgba(200,224,255,0.55);
+  letter-spacing: 0.06em;
+  line-height: 1.5;
 }
 
 /* City + author overlays */
@@ -272,7 +303,7 @@ function startOver() {
   user-select: none;
 }
 .city-overlay {
-  font-size: clamp(26px, 5vw, 54px);
+  font-size: clamp(22px, 5vw, 54px);
   font-weight: bold;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -280,7 +311,7 @@ function startOver() {
   transition: color 0.3s;
 }
 .author-overlay {
-  font-size: clamp(9px, 1.2vw, 13px);
+  font-size: clamp(8px, 1.2vw, 13px);
   letter-spacing: 0.06em;
   color: rgba(200,224,255,0.22);
 }
@@ -313,4 +344,22 @@ function startOver() {
 
 .slide-left-enter-active, .slide-left-leave-active { transition: transform 0.3s ease, opacity 0.3s; }
 .slide-left-enter-from, .slide-left-leave-to { transform: translateX(-240px); opacity: 0; }
+
+/* ── Responsive ── */
+@media (max-width: 900px) {
+  .topbar-left-space { width: 200px; }
+}
+@media (max-width: 640px) {
+  .topbar { height: 44px; padding: 0 12px; }
+  .topbar-left-space { width: 28px; }
+  .logo { font-size: 14px; }
+  .tb-btn { font-size: 9px; padding: 4px 8px; }
+  .hero-logo { margin-bottom: 8px; }
+  .overlays { bottom: 20px; }
+  .attribution-bar { font-size: 9px; right: 8px; bottom: 6px; }
+}
+@media (max-width: 400px) {
+  .hero { margin-bottom: 16px; }
+  .center-panel { width: 97vw; }
+}
 </style>

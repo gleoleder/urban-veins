@@ -140,9 +140,10 @@ function moveFocus(dir) {
 .search-panel {
   background: var(--panel);
   border: 1px solid var(--border);
-  padding: 26px 24px 20px;
+  padding: clamp(16px, 4vw, 26px) clamp(14px, 4vw, 24px) 20px;
   box-shadow: var(--shadow);
   backdrop-filter: blur(10px);
+  border-radius: 2px;
 }
 
 .search-header {
@@ -260,4 +261,11 @@ input[type="search"]::-webkit-search-cancel-button { display: none; }
 
 @keyframes blink { 0%, 100% { opacity: 1 } 50% { opacity: 0 } }
 @keyframes pulse { 0%, 100% { opacity: 0.4 } 50% { opacity: 1 } }
+
+@media (max-width: 640px) {
+  input[type="search"] { font-size: 14px; padding: 9px 34px 9px 12px; }
+  .suggestion { padding: 8px 12px; }
+  .s-name { font-size: 13px; }
+  .suggestions { max-height: 200px; }
+}
 </style>
